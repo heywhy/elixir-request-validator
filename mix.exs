@@ -19,7 +19,6 @@ defmodule RequestValidator.MixProject do
       homepage_url: "https://github.com/heywhy/elixir-request-validator",
       docs: [
         main: "readme",
-        # logo: "path/to/logo.png",
         extras: ["README.md", "LICENSE"]
       ]
     ]
@@ -35,7 +34,7 @@ defmodule RequestValidator.MixProject do
     [
       files: ["lib", "mix.exs", "README.md"],
       maintainers: ["Atanda Rasheed"],
-      licenses: ["MIT"],
+      licenses: ["MIT License"],
       links: %{
         "GitHub" => "https://github.com/heywhy/elixir-request-validator",
         "Docs" => "https://hexdocs.pm/request_validator/"

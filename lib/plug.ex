@@ -7,9 +7,12 @@ defmodule Request.Validation.Plug do
   import Plug.Conn
 
   @doc ~S"""
-  Init the Plug.Validator with an error callback
+  Init the Request.Validation.Plug with an optional error callback
+  and handlers with their corresponding request validator module.
   ```elixir
-  plug Plug.validator, on_error: fn conn, errors -> IO.puts("Handle your errors: #{inspect errors}") end
+  plug Request.Validation.Plug,
+    register: App.Requests.RegisterRequest,
+    on_error: fn conn, errors -> json_resp(conn, "Handle your errors: #{inspect errors}") end
   ```
   """
   def init([] = opts) do
@@ -21,14 +24,18 @@ defmodule Request.Validation.Plug do
     |> Map.put_new(:on_error, &Validation.Plug.on_error/2)
   end
 
+
+  @doc ~S"""
+  The default callback to be invoked when there is a param that fails validation.
+  """
   def on_error(conn, errors) do
     json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors})
   end
 
   @doc ~S"""
   Performs validations on `conn.params`
-  If all validations are successful returns an empty map
-  Otherwise returns an error map in the following structure: `%{param: "some error",....}`
+  If all validations are successful returns the connection struct
+  Otherwise returns an error map in the following structure: `%{param: ["some error", ...]}`
   Will call the given `on_error` callback in case some validation failed
   """
   def call(conn, opts) do
@@ -70,7 +77,7 @@ defmodule Request.Validation.Plug do
     end
   end
 
-  def format_rule(rule) do
+  defp format_rule(rule) do
     cond do
       is_tuple(rule) -> {_method, _opts} = rule
       true -> {rule, nil}

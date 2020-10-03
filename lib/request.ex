@@ -1,5 +1,4 @@
 defmodule Request.Validator do
-  @moduledoc false
 
   @doc ~S"""
   Get the validation rules that apply to the request.
