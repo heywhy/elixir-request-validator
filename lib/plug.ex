@@ -1,7 +1,7 @@
-defmodule Request.Validation.Plug do
+defmodule Request.Validator.Plug do
 
   alias Plug.Conn
-  alias Request.Validation
+  alias Request.Validator
   alias Request.Validator.Rules
 
   import Plug.Conn
@@ -17,11 +17,11 @@ defmodule Request.Validation.Plug do
   """
   def init([] = opts) do
     opts
-    |> Keyword.put_new(:on_error, &Validation.Plug.on_error/2)
+    |> Keyword.put_new(:on_error, &Validator.Plug.on_error/2)
   end
   def init(%{} = opts) do
     opts
-    |> Map.put_new(:on_error, &Validation.Plug.on_error/2)
+    |> Map.put_new(:on_error, &Validator.Plug.on_error/2)
   end
 
 

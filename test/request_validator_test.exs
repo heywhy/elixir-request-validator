@@ -3,7 +3,7 @@ defmodule RequestValidatorTest do
   use Plug.Test
 
   alias Plug.Conn
-  alias Request.Validation.Plug, as: ValidationPlug
+  alias Request.Validator.Plug, as: ValidationPlug
   alias Request.Validation.RegisterRequest
 
   @opts ValidationPlug.init(%{register: RegisterRequest})
