@@ -1,6 +1,8 @@
 defmodule RequestValidator.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/heywhy/elixir-request-validator"
+
   def project do
     [
       app: :request_validator,
@@ -9,14 +11,13 @@ defmodule RequestValidator.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-
       description: description(),
       package: package(),
 
       # Docs
       name: "RequestValidator",
-      source_url: "https://github.com/heywhy/elixir-request-validator",
-      homepage_url: "https://github.com/heywhy/elixir-request-validator",
+      source_url: @source_url,
+      homepage_url: @source_url,
       docs: [
         main: "readme",
         extras: ["README.md", "LICENSE"]
@@ -36,24 +37,21 @@ defmodule RequestValidator.MixProject do
       maintainers: ["Atanda Rasheed"],
       licenses: ["MIT License"],
       links: %{
-        "GitHub" => "https://github.com/heywhy/elixir-request-validator",
+        "GitHub" => @source_url,
         "Docs" => "https://hexdocs.pm/request_validator/"
       }
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:plug, "~> 1.10"},
