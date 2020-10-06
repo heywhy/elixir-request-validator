@@ -9,7 +9,7 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.2.1"}
+    {:request_validator, "~> 0.3.0"}
   ]
 end
 ```
@@ -77,9 +77,51 @@ end
 
 Full documentation can be found at [https://hexdocs.pm/request_validator](https://hexdocs.pm/request_validator).
 
+## Ecto Support
+
+In some cases, your application already makes use of the ecto library. I'm glad to tell you that this library has support when the rule method returns a `Ecto.Changeset` struct, so that you can
+make use of the advantages provided by this library without rewritting your validation logic. See example below:
+
+```elixir
+defmodule App.Requests.TestRequest do
+  use Request.Validator
+  use Ecto.Schema
+
+  alias App.Requests.TestRequest
+
+  import Ecto.Changeset
+
+  @behaviour Request.Validator
+
+  embedded_schema do
+    field(:name, :string)
+    field(:email, :string)
+    field(:age, :integer)
+    field(:password, :string)
+  end
+
+  @doc false
+  defp changeset(contact, attrs) do
+    contact
+    |> cast(attrs, [:name, :email, :age, :password])
+    |> validate_required([:name, :email, :age, :password])
+    |> validate_number(:age, less_than_or_equal_to: 32)
+  end
+
+  @impl Request.Validator
+  def rules(conn) do
+    %TestRequest{} |> changeset(conn.params)
+  end
+
+  @impl Request.Validator
+  @spec authorize(Plug.Conn.t())::boolean()
+  def authorize(_), do: true
+end
+```
+
 ## Custom Error Messages
 
-In most cases you will probably specify your custome error messages in a language file with the help of [gettext](https://hexdocs.pm/gettext/). First of all, you will need to provide your own translator module.
+In most cases you will probably specify your custom error messages in a language file with the help of [gettext](https://hexdocs.pm/gettext/). First of all, you will need to provide your own translator module.
 
 ```elixir
 # lib/gettext.ex
@@ -211,7 +253,7 @@ The field under validation must be a string.
 
 - [ ] Include more validation rules
 - [ ] Norm validation support
-- [ ] Ecto schema support
+- [x] Ecto schema support
 
 ## License
 

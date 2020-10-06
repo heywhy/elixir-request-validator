@@ -1,6 +1,7 @@
 defmodule Request.Validator.Plug do
 
   alias Plug.Conn
+  alias Ecto.Changeset
   alias Request.Validator
   alias Request.Validator.Rules
   alias Request.Validator.Translations.Messages
@@ -57,6 +58,7 @@ defmodule Request.Validator.Plug do
   defp get_validator(opt, key) when is_list(opt), do: Keyword.get(opt, key)
 
   defp validate(conn, module, on_error) do
+    module = load_module(module)
     rules = if function_exported?(module, :rules, 1), do: module.rules(conn), else: module
     errors = collect_errors(conn, rules)
 
@@ -71,6 +73,13 @@ defmodule Request.Validator.Plug do
     do: norm_errors(conn.params, conform(conn.params, spec))
   defp collect_errors(conn, %Norm.Core.Selection{}=spec),
     do: norm_errors(conn.params, conform(conn.params, spec))
+  defp collect_errors(_, %Ecto.Changeset{} = changeset) do
+    Changeset.traverse_errors(changeset, fn ({key, errors}) ->
+      Enum.reduce(errors, key, fn {key, value}, acc ->
+        String.replace(acc, "%{#{key}}", to_string(value))
+      end)
+    end)
+  end
   defp collect_errors(conn, validations) do
     Enum.reduce(validations, %{}, errors_collector(conn))
   end
@@ -158,15 +167,16 @@ defmodule Request.Validator.Plug do
   end
 
   defp translator do
-    module = Application.get_env(:request_validator, :translator, Messages)
-    case Code.ensure_loaded(module) do
-      {:module, mod} -> mod
-      {:error, reason} -> raise ArgumentError, "Could not load #{module}, reason: #{reason}"
-    end
+    Application.get_env(:request_validator, :translator, Messages)
+    |> load_module()
   end
 
   defp get_rules_module do
-    module = Application.get_env(:request_validator, :rules, Rules)
+    Application.get_env(:request_validator, :rules, Rules)
+    |> load_module()
+  end
+
+  defp load_module(module) do
     case Code.ensure_loaded(module) do
       {:module, mod} -> mod
       {:error, reason} -> raise ArgumentError, "Could not load #{module}, reason: #{reason}"

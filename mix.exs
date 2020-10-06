@@ -6,7 +6,7 @@ defmodule RequestValidator.MixProject do
   def project do
     [
       app: :request_validator,
-      version: "0.2.1",
+      version: "0.3.0",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -58,6 +58,7 @@ defmodule RequestValidator.MixProject do
     [
       {:plug, "~> 1.10"},
       {:jason, "~> 1.2"},
+      {:ecto, "~> 3.4.6"},
       {:norm, "~> 0.12.0"},
       {:email_checker, "~> 0.1"},
       {:gettext, ">= 0.0.0"},
