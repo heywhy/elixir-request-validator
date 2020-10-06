@@ -104,7 +104,7 @@ defmodule Request.Validator.Plug do
         if apply(mod, method, args) do
           nil
         else
-          translator().get_message(method, field, {value, params, fields})
+          translator().get_message(method, field, {value, params})
         end
       end
 
