@@ -3,7 +3,9 @@ defmodule Request.Validator.Plug do
   alias Plug.Conn
   alias Request.Validator
   alias Request.Validator.Rules
+  alias Request.Validator.Translations.Messages
 
+  import Norm
   import Plug.Conn
 
   @doc ~S"""
@@ -24,12 +26,15 @@ defmodule Request.Validator.Plug do
     |> Map.put_new(:on_error, &Validator.Plug.on_error/2)
   end
 
-
   @doc ~S"""
   The default callback to be invoked when there is a param that fails validation.
   """
   def on_error(conn, errors) do
-    json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors})
+    json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors}) |> halt
+  end
+
+  defp unauthorized(conn) do
+    json_resp(conn, 401, %{message: "Unauthorized"}) |> halt
   end
 
   @doc ~S"""
@@ -55,13 +60,17 @@ defmodule Request.Validator.Plug do
     rules = if function_exported?(module, :rules, 1), do: module.rules(conn), else: module
     errors = collect_errors(conn, rules)
 
-    if Enum.empty?(errors) do
-      conn
-    else
-      on_error.(conn, errors) |> halt
+    cond do
+      not module.authorize(conn) -> unauthorized(conn)
+      Enum.empty?(errors) -> conn
+      true -> on_error.(conn, errors)
     end
   end
 
+  defp collect_errors(conn, %Norm.Core.Schema{}=spec),
+    do: norm_errors(conn.params, conform(conn.params, spec))
+  defp collect_errors(conn, %Norm.Core.Selection{}=spec),
+    do: norm_errors(conn.params, conform(conn.params, spec))
   defp collect_errors(conn, validations) do
     Enum.reduce(validations, %{}, errors_collector(conn))
   end
@@ -70,7 +79,7 @@ defmodule Request.Validator.Plug do
     fn {field, vf}, acc ->
       value = Map.get(conn.params, Atom.to_string(field))
 
-      case run_rules(field, vf, value) do
+      case run_rules(field, vf, value, conn.params) do
         {:error, rules} -> Map.put(acc, field, rules)
         _ -> acc
       end
@@ -78,26 +87,64 @@ defmodule Request.Validator.Plug do
   end
 
   defp format_rule(rule) do
-    cond do
-      is_tuple(rule) -> {_method, _opts} = rule
-      true -> {rule, nil}
+    case rule do
+      {_method, _opts} -> rule
+      _ -> {rule, nil}
     end
   end
 
-  defp run_rules(field, rules, value) do
+  defp run_rules(field, rules, value, fields) do
     results = Enum.map(rules, fn rule ->
-      {method, opts} = format_rule(rule)
-      case function_exported?(Rules, method, 3) do
-        true ->
-          result = apply(Rules, method, [value, opts, field])
-          if is_binary(result), do: result, else: nil
+      {method, params} = format_rule(rule)
+      rules_mod = get_rules_module()
+      opts = [value, params, fields]
+      args = get_args(rules_mod, method, opts)
 
-        _ -> raise ArgumentError, message: "invalid validation rule [#{method}] provided"
+      callback = fn (mod, method, args) ->
+        if apply(mod, method, args) do
+          nil
+        else
+          translator().get_message(method, field, {value, params, fields})
+        end
+      end
+
+      case args do
+        nil -> raise ArgumentError, message: "invalid validation rule [#{method}] provided"
+        _ -> callback.(rules_mod, method, args)
       end
     end)
     |> Enum.filter(&(!!&1))
 
     if Enum.empty?(results), do: nil, else: {:error, results}
+  end
+
+  defp get_args(mod, method, opts) do
+    cond do
+      function_exported?(mod, method, 3) -> opts
+      function_exported?(mod, method, 2) ->
+        [value, params, _] = opts
+        [value, params]
+      true -> nil
+    end
+  end
+
+  defp parse_norm_spec(spec) do
+    case Regex.compile(spec) do
+      {:ok, _regex} ->
+        [spec, []]
+      {:error, err} ->
+        [spec, [err]]
+    end
+  end
+
+  defp norm_errors(_, {:ok, _}), do: []
+  defp norm_errors(fields, {:error, inputs}) do
+    Enum.reduce(inputs, %{}, fn %{path: path, spec: spec}, acc ->
+      field = hd(path)
+      [rule, params] = parse_norm_spec(spec)
+      msg = translator().get_message(rule, field, {params, fields})
+      Map.put(acc, field, [msg])
+    end)
   end
 
   defp json_resp(conn, status, body) do
@@ -108,5 +155,21 @@ defmodule Request.Validator.Plug do
 
   defp json_library do
     Application.get_env(:request_validator, :json_library, Jason)
+  end
+
+  defp translator do
+    module = Application.get_env(:request_validator, :translator, Messages)
+    case Code.ensure_loaded(module) do
+      {:module, mod} -> mod
+      {:error, reason} -> raise ArgumentError, "Could not load #{module}, reason: #{reason}"
+    end
+  end
+
+  defp get_rules_module do
+    module = Application.get_env(:request_validator, :rules, Rules)
+    case Code.ensure_loaded(module) do
+      {:module, mod} -> mod
+      {:error, reason} -> raise ArgumentError, "Could not load #{module}, reason: #{reason}"
+    end
   end
 end

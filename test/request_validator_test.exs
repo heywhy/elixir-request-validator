@@ -4,7 +4,11 @@ defmodule RequestValidatorTest do
 
   alias Plug.Conn
   alias Request.Validator.Plug, as: ValidationPlug
-  alias Request.Validation.RegisterRequest
+  alias RequestValidatorTest.RegisterRequest
+
+  require RequestValidatorTest.RegisterRequest
+
+  Application.put_env(:request_validator, :translator, RequestValidatorTest.Messages)
 
   @opts ValidationPlug.init(%{register: RegisterRequest})
 
@@ -22,6 +26,7 @@ defmodule RequestValidatorTest do
   test "passes request validations" do
     params = %{
       email: "test@gmail.com",
+      password: "password",
       name: "john doe",
       age: 31
     }

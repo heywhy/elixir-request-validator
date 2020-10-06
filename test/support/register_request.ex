@@ -1,4 +1,5 @@
-defmodule Request.Validation.RegisterRequest do
+defmodule RequestValidatorTest.RegisterRequest do
+  use Request.Validator
 
   @behaviour Request.Validator
 
@@ -7,7 +8,8 @@ defmodule Request.Validation.RegisterRequest do
     %{
       email: [:required, :email],
       name: [:required, :string],
-      age: [:required, :numeric]
+      password: [:required, :string],
+      age: [:required, :numeric, {:max, 32}]
     }
   end
 

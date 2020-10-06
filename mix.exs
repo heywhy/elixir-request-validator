@@ -6,18 +6,20 @@ defmodule RequestValidator.MixProject do
   def project do
     [
       app: :request_validator,
-      version: "0.1.1",
+      version: "0.2.0",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      compilers: [:gettext] ++ Mix.compilers(),
+
       description: description(),
       package: package(),
 
       # Docs
       name: "RequestValidator",
       source_url: @source_url,
-      homepage_url: @source_url,
+      homepage_url: "https://hexdocs.pm/request_validator/",
       docs: [
         main: "readme",
         extras: ["README.md", "LICENSE"]
@@ -56,7 +58,9 @@ defmodule RequestValidator.MixProject do
     [
       {:plug, "~> 1.10"},
       {:jason, "~> 1.2"},
+      {:norm, "~> 0.12.0"},
       {:email_checker, "~> 0.1"},
+      {:gettext, ">= 0.0.0"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end
