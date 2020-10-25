@@ -251,8 +251,8 @@ The field under validation must be a string.
 
 ## TODOS
 
-- [] Include more validation rules
-- [] Norm validation support
+- [ ] Include more validation rules
+- [ ] Norm validation support
 - [x] Ecto schema support
 
 ## License
