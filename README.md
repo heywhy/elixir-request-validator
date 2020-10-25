@@ -9,7 +9,7 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.3.0"}
+    {:request_validator, "~> 0.3"}
   ]
 end
 ```
@@ -251,8 +251,8 @@ The field under validation must be a string.
 
 ## TODOS
 
-- [ ] Include more validation rules
-- [ ] Norm validation support
+- [] Include more validation rules
+- [] Norm validation support
 - [x] Ecto schema support
 
 ## License
