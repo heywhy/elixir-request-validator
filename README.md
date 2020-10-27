@@ -249,6 +249,10 @@ The field under validation must be present in the input data and not empty. A fi
 
 The field under validation must be a string.
 
+### {same, *field*}
+
+The given field must match the field under validation.
+
 ## TODOS
 
 - [ ] Include more validation rules
