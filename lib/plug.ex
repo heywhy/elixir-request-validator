@@ -86,7 +86,7 @@ defmodule Request.Validator.Plug do
 
   defp errors_collector(conn) do
     fn {field, vf}, acc ->
-      value = Map.get(conn.params, Atom.to_string(field))
+      value = Map.get(conn.params, to_string(field))
 
       case run_rules(field, vf, value, conn.params) do
         {:error, rules} -> Map.put(acc, field, rules)
