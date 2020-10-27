@@ -93,6 +93,16 @@ defmodule Request.Validator.Messages do
             dpgettext("validations", "min", "The %{field} must be at least %{min}.", field: attr, min: min)
         end
       end
+
+      def same(attr, params), do: is_same(attr, params)
+      def is_same(attr, params) do
+        {value, opt} = params
+        opts =
+          if(is_list(opt), do: opt, else: [opt])
+          |> Enum.map(&to_string/1)
+
+        dpgettext("validations", "same", "The %{field} and %{other} must match.", field: attr, other: [opts])
+      end
     end
   end
 end

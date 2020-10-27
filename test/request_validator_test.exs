@@ -29,6 +29,7 @@ defmodule RequestValidatorTest do
 
   test "passes request validations" do
     params = %{
+      password_confirmation: "password",
       email: "test@gmail.com",
       password: "password",
       name: "john doe",

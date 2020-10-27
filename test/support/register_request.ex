@@ -8,8 +8,8 @@ defmodule RequestValidatorTest.RegisterRequest do
     %{
       email: [:required, :email],
       name: [:required, :string],
-      password: [:required, :string],
-      age: [:required, :numeric, {:max, 32}]
+      age: [:required, :numeric, {:max, 32}],
+      password: [:required, :string, {:same, :password_confirmation}]
     }
   end
 

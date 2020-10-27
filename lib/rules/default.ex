@@ -179,6 +179,24 @@ defmodule Request.Validator.DefaultRules do
       def required(nil, _), do: false
       def required(value), do: required(value, nil)
       def required(value, _), do: is_list(value) || is_number(value) || !is_nil(value) && String.length(value) > 0
+
+      @doc """
+
+      ## Examples
+
+          iex> Request.Validator.Rules.same(120, :field, %{field: 120})
+          true
+          iex> Request.Validator.Rules.same(10, :field, %{field: 20})
+          false
+      """
+      def same(value, opts, fields) when not is_list(opts),
+        do: same(value, [opts], fields)
+      def same(value, opts, fields) do
+        Enum.all?(opts, fn opt ->
+          opt_value = Map.get(fields, to_string(opt), Map.get(fields, opt))
+          value == opt_value
+        end)
+      end
     end
   end
 end
