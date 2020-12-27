@@ -24,7 +24,7 @@ defmodule RequestValidatorTest do
     assert conn.state == :sent
     assert conn.status == 422
     assert conn.resp_body =~ "email"
-    assert conn.resp_body =~ "The email field is required"
+    assert conn.resp_body =~ "This field is required"
   end
 
   test "passes request validations" do

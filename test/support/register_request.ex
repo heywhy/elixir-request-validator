@@ -6,10 +6,10 @@ defmodule RequestValidatorTest.RegisterRequest do
   @impl Request.Validator
   def rules(_) do
     %{
-      email: [:required, :email],
-      name: [:required, :string],
-      age: [:required, :numeric, {:max, 32}],
-      password: [:required, :string, {:same, :password_confirmation}]
+      email: [is_required(), is_email()],
+      name: [is_required(), is_string()],
+      age: [is_required(), is_numeric(), is_min(2), is_max(32)],
+      password: [is_required(), is_string(), is_confirmed()],
     }
   end
 
