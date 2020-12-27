@@ -11,7 +11,7 @@ defmodule RequestValidator.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
 
       description: description(),
       package: package(),
