@@ -13,4 +13,13 @@ defmodule Request.Validator.Helper do
       def unquote(name)(), do: unquote(callback)
     end
   end
+
+  defmacro validate_request(action, validator, error_callback \\ nil) when is_atom(action) do
+    quote do
+      plug Request.Validation.Plug, %{
+        :on_error => unquote(error_callback),
+        unquote(action) => unquote(validator)
+      }
+    end
+  end
 end
