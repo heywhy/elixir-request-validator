@@ -2,6 +2,7 @@ defmodule Request.Validator.Plug do
   alias Plug.Conn
   alias Ecto.Changeset
   alias Request.Validator
+  alias Request.Validator.Rules
 
   import Plug.Conn
 
@@ -77,23 +78,43 @@ defmodule Request.Validator.Plug do
   end
 
   defp errors_collector(conn) do
-    fn {field, vf}, acc ->
-      value = Map.get(conn.params, to_string(field))
+    fn
+      {field, %Rules.Bail{rules: rules}}, acc ->
+        value = Map.get(conn.params, to_string(field))
+        result = Enum.find_value(rules, nil, fn callback ->
+          case run_rule(callback, value, field, conn.params) do
+            :ok ->
+              nil
+            a -> a
+          end
+        end)
 
-      case run_rules(vf, value, field, conn.params) do
-        {:error, rules} -> Map.put(acc, field, rules)
-        _ -> acc
-      end
+        case is_binary(result) do
+          true -> Map.put(acc, field, [result])
+          _ -> acc
+        end
+
+      {field, vf}, acc ->
+        value = Map.get(conn.params, to_string(field))
+
+        case run_rules(vf, value, field, conn.params) do
+          {:error, rules} -> Map.put(acc, field, rules)
+          _ -> acc
+        end
+    end
+  end
+
+  defp run_rule(callback, value, field, fields) do
+    extra = [field: field, fields: fields]
+    case apply(callback, [value, extra]) do
+      :ok -> true
+      {:error, msg} -> msg
     end
   end
 
   defp run_rules(rules, value, field, fields) do
     results = Enum.map(rules, fn callback ->
-      extra = [field: field, fields: fields]
-      case apply(callback, [value, extra]) do
-        :ok -> true
-        {:error, msg} -> msg
-      end
+      run_rule(callback, value, field, fields)
     end)
     |> Enum.filter(&is_binary/1)
 

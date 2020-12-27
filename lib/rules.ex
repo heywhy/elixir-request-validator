@@ -3,6 +3,12 @@ defmodule Request.Validator.Rules do
 
   import Request.Validator.Helper
 
+  defmodule Bail do
+    defstruct rules: []
+  end
+
+  def bail(rules), do: %__MODULE__.Bail{rules: rules}
+
   define_rule(:is_email, fn(value, _) ->
     validate(EmailChecker.valid?(value || ""), "This field must be a valid email address.")
   end)
