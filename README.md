@@ -189,6 +189,10 @@ After adding the rule which is a method, then you can make use of the rule in an
 
 Below is a list of all available validation rules and their function:
 
+### bail
+
+Stop running validation rules after the first validation failure. Example, `bail([is_required(), is_string()])`
+
 ### is_confirmed()
 
 The field under validation must have a matching field of `bar_confirmation`. For example, if the field under validation is `password`, a matching `password_confirmation` field must be present in the input.
