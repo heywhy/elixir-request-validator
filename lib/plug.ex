@@ -51,15 +51,6 @@ defmodule Request.Validator.Plug do
     end
   end
 
-  defmacro validate_request(action, validator, error_callback \\ nil) when is_atom(action) do
-    quote do
-      plug(Request.Validation.Plug, %{
-        :on_error => unquote(error_callback),
-        unquote(action) => unquote(validator)
-      })
-    end
-  end
-
   defp get_validator(opt, key) when is_map(opt), do: Map.get(opt, key)
   defp get_validator(opt, key) when is_list(opt), do: Keyword.get(opt, key)
 
