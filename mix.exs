@@ -61,7 +61,6 @@ defmodule RequestValidator.MixProject do
       {:ecto, "~> 3.5"},
       {:norm, "~> 0.12.0"},
       {:email_checker, "~> 0.1"},
-      {:gettext, ">= 0.0.0"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end
