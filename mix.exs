@@ -6,12 +6,12 @@ defmodule RequestValidator.MixProject do
   def project do
     [
       app: :request_validator,
-      version: "0.3.3",
+      version: "0.4.0",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
 
       description: description(),
       package: package(),
@@ -61,7 +61,6 @@ defmodule RequestValidator.MixProject do
       {:ecto, "~> 3.5"},
       {:norm, "~> 0.12.0"},
       {:email_checker, "~> 0.1"},
-      {:gettext, ">= 0.0.0"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end
