@@ -9,7 +9,7 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.3"}
+    {:request_validator, "~> 0.4.0-alpha.1"}
   ]
 end
 ```
@@ -117,29 +117,6 @@ defmodule App.Requests.TestRequest do
   @spec authorize(Plug.Conn.t())::boolean()
   def authorize(_), do: true
 end
-```
-
-## Custom Error Messages
-
-In most cases you will probably specify your custom error messages in a language file with the help of [gettext](https://hexdocs.pm/gettext/). First of all, you will need to provide your own translator module.
-
-```elixir
-# lib/gettext.ex
-defmodule App.Gettext do
-  @moduledoc false
-  use Gettext, otp_app: :web_app
-end
-
-# lib/validations/messages.ex
-defmodule App.Validation.Messages do
-  @moduledoc false
-  use Request.Validator.Messages, gettext: App.Gettext
-end
-
-# config/config.exs
-use Mix.Config
-
-config :request_validator, :translator, App.Validation.Messages
 ```
 
 ## Custom Validation Rules
