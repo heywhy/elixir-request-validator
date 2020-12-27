@@ -52,21 +52,25 @@ defmodule Request.Validator.Rules do
     end
   end)
 
-  with_param(:is_gt, fn(min, value, _) ->
+  with_param(:is_gt, fn(other, value, fields: fields) ->
+    min =
+      Map.get(fields, other) || other
     msg =
       cond do
         is_binary(value) ->
-          "This field must be greater than #{min} characters."
+          "This field must be greater than #{other} characters."
         is_list(value) ->
-          "This field must have more than #{min} items."
+          "This field must have more than #{other} items."
         true ->
-          "This field must be greater than #{min}."
+          "This field must be greater than #{other}."
       end
 
     validate(value > min, msg)
   end)
 
-  with_param(:is_lt, fn(max, value, _) ->
+  with_param(:is_lt, fn(other, value, fields: fields) ->
+    max =
+      Map.get(fields, other) || other
     msg =
       cond do
         is_binary(value) ->
@@ -83,7 +87,7 @@ defmodule Request.Validator.Rules do
   define_rule(:is_confirmed, fn(value, field: field, fields: fields) ->
     path = "#{field}_confirmation"
 
-    validate(value == fields[path], "This field and #{path} must match.")
+    validate(value == fields[path], "This field confirmation does not match")
   end)
 
   defp validate(condition, msg) do

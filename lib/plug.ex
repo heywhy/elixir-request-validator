@@ -15,13 +15,9 @@ defmodule Request.Validator.Plug do
     on_error: fn conn, errors -> json_resp(conn, "Handle your errors: #{inspect errors}") end
   ```
   """
-  def init([] = opts) do
+  def init(opts) do
     opts
     |> Keyword.put_new(:on_error, &Validator.Plug.on_error/2)
-  end
-  def init(%{} = opts) do
-    opts
-    |> Map.put_new(:on_error, &Validator.Plug.on_error/2)
   end
 
   @doc ~S"""

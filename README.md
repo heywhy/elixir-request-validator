@@ -9,7 +9,7 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.4.0-alpha.1"}
+    {:request_validator, "~> 0.4"}
   ]
 end
 ```
@@ -43,10 +43,10 @@ end
     @spec rules(Plug.Conn.t()) :: map()|keyword()
     def rules(_) do
       %{
-        "email" => [:required, :email],
-        "name" => [:required, :string],
-        "password" => [:required, :string],
-        "age" => [:required, :numeric, {:min, 18}]
+        "email" => [is_required(), is_email()],
+        "name" => [is_required(), is_string()],
+        "password" => [is_required(), is_string()],
+        "age" => [is_required(), is_numeric(), is_min(18)]
       }
     end
 
@@ -64,8 +64,8 @@ end
     @spec rules(Plug.Conn.t()) :: map()|keyword()
     def rules(_) do
       %{
-        "email" => [:required, :email],
-        "password" => [:required, :string]
+        "email" => [is_required(), is_email()],
+        "password" => [is_required(), is_string()]
       }
     end
 
@@ -126,39 +126,36 @@ This library provides a variety of helpful rules, however, you might want to def
 ```elixir
 # lib/validations/rules.ex
 defmodule App.Validation.Rules do
-  use Request.Validator.Rules
-  use App.Repo
-
   alias App.Repo
 
-  def exists(value, {model, field}, fields) do
-    from model, where: [{field, value}]
-    |> Repo.exists
-  end
+  require Request.Validator.Helper
+
+  import Ecto.Query
+  import Request.Validator.Helper
+
+  with_param(:exists, fn ({model, field}, value, _) ->
+    result =
+      from(m in model, where: field(m, ^field) == ^value)
+      |> Repo.exists?()
+
+    case result do
+      true ->
+        :ok
+      _ ->
+        {:error, "This field doesn't exists."}
+    end
+  end)
+
+  with_param(:unique, fn(params, value, _) ->
+    case exists(params).(value, nil) do
+      :ok ->
+        {:error, "This field has already been taken."}
+      {:error, _} ->
+        :ok
+    end
+  end)
 end
 
-# lib/validations/messages.ex
-defmodule App.Validation.Messages do
-  @moduledoc false
-  use Request.Validator.Messages, gettext: App.Gettext
-
-  ...
-
-  def exists(attr, params) do
-    dgettext("validations", "This %{field} doesn't exists.", field: attr)
-  end
-end
-```
-
-After the modules have been defined you will to set some configs to override the default modules used by the library.
-
-```elixir
-# config/config.exs
-use Mix.Config
-
-config :request_validator,
-  rules: App.Validation.Rules,
-  translator: App.Validation.Messages
 ```
 
 After adding the rule which is a method, then you can make use of the rule in any of your request validator module.
@@ -173,10 +170,10 @@ After adding the rule which is a method, then you can make use of the rule in an
     @spec rules(Plug.Conn.t()) :: map()|keyword()
     def rules(_) do
       %{
-        "email" => [:required, :email],
-        "name" => [:required, :string],
-        "age" => [:required, :numeric, {:min, 18}],
-        "course" => [:required, :string, {:exists, {App.Course, :id}}]
+        "email" => [is_required(), is_email()],
+        "name" => [is_required(), is_string()],
+        "age" => [is_required(), is_numeric(), is_min(18)],
+        "course" => [is_required(), is_string(), exists({App.Course, :id})]
       }
     end
 
@@ -186,35 +183,42 @@ After adding the rule which is a method, then you can make use of the rule in an
   end
 ```
 
+**NB:** You should use the `define_rule` macro if your validation function doesn't accept argument like the `exists` rule. And you can also define a function directly and reference using *function capturing*, e.g. `&rule_validator/2`.
+
 ## Rules
 
 Below is a list of all available validation rules and their function:
 
-### email
+### is_confirmed()
+
+The field under validation must have a matching field of `bar_confirmation`. For example, if the field under validation is `password`, a matching `password_confirmation` field must be present in the input.
+
+
+### is_email
 
 The field under validation must be formatted as an e-mail address
 
-### {gt, *field*}
+### is_gt(*field*)
 
 The field under validation must be greater than the given field. The two fields must be of the same type
 
-### {lt, *field*}
+### is_lt(*field*)
 
 The field under validation must be less than the given *field*. The two fields must be of the same type
 
-### {max, *value*}
+### is_max(*value*)
 
 The field under validation must be less than or equal to a maximum *value*. Supported types are strings, numerics and list.
 
-### {min, *value*}
+### is_min(*value*)
 
 The field under validation must have a minimum *value*. Supported types are strings, numerics and list.
 
-### numeric
+### is_numeric()
 
 The field under validation must be numeric.
 
-### required
+### is_required()
 
 The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
 
@@ -222,13 +226,9 @@ The field under validation must be present in the input data and not empty. A fi
 - The value is an empty string.
 - The value is an empty list or map.
 
-### string
+### is_string()
 
 The field under validation must be a string.
-
-### {same, *field*}
-
-The given field must match the field under validation.
 
 ## TODOS
 
