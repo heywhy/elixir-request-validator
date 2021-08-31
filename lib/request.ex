@@ -1,5 +1,4 @@
 defmodule Request.Validator do
-
   @doc ~S"""
   Get the validation rules that apply to the request.
   """
@@ -21,6 +20,7 @@ defmodule Request.Validator do
       import Request.Validator.Rules
 
       @before_compile Request.Validator
+      @behaviour Request.Validator
     end
   end
 

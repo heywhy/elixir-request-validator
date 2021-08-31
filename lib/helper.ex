@@ -3,7 +3,7 @@ defmodule Request.Validator.Helper do
     quote do
       def unquote(name)(params) do
         func = unquote(callback)
-        &(func.(params, &1, &2))
+        &func.(params, &1, &2)
       end
     end
   end

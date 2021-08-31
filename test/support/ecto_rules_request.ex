@@ -4,8 +4,6 @@ defmodule RequestValidatorTest.EctoRulesRequest do
 
   import Ecto.Changeset
 
-  @behaviour Request.Validator
-
   embedded_schema do
     field(:name, :string)
     field(:email, :string)
@@ -28,6 +26,6 @@ defmodule RequestValidatorTest.EctoRulesRequest do
   end
 
   @impl Request.Validator
-  @spec authorize(Plug.Conn.t())::boolean()
+  @spec authorize(Plug.Conn.t()) :: boolean()
   def authorize(_), do: true
 end

@@ -9,10 +9,10 @@ defmodule RequestValidatorTest do
 
   Application.put_env(:request_validator, :translator, RequestValidatorTest.Messages)
 
-  @opts ValidationPlug.init(%{
-    register: RegisterRequest,
-    ecto_rules: EctoRulesRequest
-  })
+  @opts ValidationPlug.init(
+          register: RegisterRequest,
+          ecto_rules: EctoRulesRequest
+        )
 
   test "fails request validations" do
     conn =
@@ -33,8 +33,11 @@ defmodule RequestValidatorTest do
       email: "test@gmail.com",
       password: "password",
       name: "john doe",
-      age: 31
+      age: 31,
+      year: 1995,
+      mother_age: 32
     }
+
     conn =
       conn(:post, "/api/hello", params)
       |> Conn.put_private(:phoenix_action, :register)
@@ -65,14 +68,15 @@ defmodule RequestValidatorTest do
       name: "john doe",
       age: 31
     }
+
     conn =
       conn(:post, "/api/hello", params)
       |> Conn.put_req_header("content-type", "application/json")
       |> Conn.put_private(:phoenix_action, :ecto_rules)
       |> ValidationPlug.call(@opts)
 
-      assert conn.state == :unset
-      assert conn.resp_body == nil
-      assert conn.status == nil
+    assert conn.state == :unset
+    assert conn.resp_body == nil
+    assert conn.status == nil
   end
 end

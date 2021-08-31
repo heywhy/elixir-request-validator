@@ -2,19 +2,21 @@ defmodule Request.Validator.Plug do
   alias Plug.Conn
   alias Ecto.Changeset
   alias Request.Validator
-  alias Request.Validator.Rules
+  alias Request.Validator.{DefaultRules, Rules}
 
   import Plug.Conn
 
   @doc ~S"""
-  Init the Request.Validation.Plug with an optional error callback
+  Init the Request.Validator.Plug with an optional error callback
   and handlers with their corresponding request validator module.
   ```elixir
-  plug Request.Validation.Plug,
+  plug Request.Validator.Plug,
     register: App.Requests.RegisterRequest,
     on_error: fn conn, errors -> json_resp(conn, "Handle your errors: #{inspect errors}") end
   ```
   """
+  def init(opts) when is_map(opts), do: init(Keyword.new(opts))
+
   def init(opts) do
     opts
     |> Keyword.put_new(:on_error, &Validator.Plug.on_error/2)
@@ -24,7 +26,7 @@ defmodule Request.Validator.Plug do
   The default callback to be invoked when there is a param that fails validation.
   """
   def on_error(conn, errors) do
-    json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors}) |> halt
+    json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors}) |> halt()
   end
 
   defp unauthorized(conn) do
@@ -39,7 +41,7 @@ defmodule Request.Validator.Plug do
   """
   def call(conn, opts) do
     with action <- Map.get(conn.private, :phoenix_action),
-        request_validator <- get_validator(opts, action) do
+         request_validator <- get_validator(opts, action) do
       case request_validator do
         nil -> conn
         _ -> validate(Conn.fetch_query_params(conn), request_validator, opts[:on_error])
@@ -52,7 +54,16 @@ defmodule Request.Validator.Plug do
 
   defp validate(conn, module, on_error) do
     module = load_module(module)
-    rules = if function_exported?(module, :rules, 1), do: module.rules(conn), else: module
+
+    rules =
+      cond do
+        function_exported?(module, :rules, 1) ->
+          module.rules(conn)
+
+        function_exported?(module, :rules, 0) ->
+          module.rules()
+      end
+
     errors = collect_errors(conn, rules)
 
     cond do
@@ -63,12 +74,13 @@ defmodule Request.Validator.Plug do
   end
 
   defp collect_errors(_, %Ecto.Changeset{} = changeset) do
-    Changeset.traverse_errors(changeset, fn ({key, errors}) ->
+    Changeset.traverse_errors(changeset, fn {key, errors} ->
       Enum.reduce(errors, key, fn {key, value}, acc ->
         String.replace(acc, "%{#{key}}", to_string(value))
       end)
     end)
   end
+
   defp collect_errors(conn, validations) do
     Enum.reduce(validations, %{}, errors_collector(conn))
   end
@@ -77,13 +89,17 @@ defmodule Request.Validator.Plug do
     fn
       {field, %Rules.Bail{rules: rules}}, acc ->
         value = Map.get(conn.params, to_string(field))
-        result = Enum.find_value(rules, nil, fn callback ->
-          case run_rule(callback, value, field, conn.params) do
-            :ok ->
-              nil
-            a -> a
-          end
-        end)
+
+        result =
+          Enum.find_value(rules, nil, fn callback ->
+            case run_rule(callback, value, field, conn.params) do
+              :ok ->
+                nil
+
+              a ->
+                a
+            end
+          end)
 
         case is_binary(result) do
           true -> Map.put(acc, field, [result])
@@ -101,18 +117,30 @@ defmodule Request.Validator.Plug do
   end
 
   defp run_rule(callback, value, field, fields) do
-    extra = [field: field, fields: fields]
-    case apply(callback, [value, extra]) do
+    opts = [field: field, fields: fields]
+    module = rules_module()
+
+    {callback, args} =
+      case callback do
+        cb when is_atom(cb) ->
+          {cb, [value, opts]}
+
+        {cb, params} ->
+          {cb, [value, params, opts]}
+      end
+
+    case apply(module, callback, args) do
       :ok -> true
       {:error, msg} -> msg
     end
   end
 
   defp run_rules(rules, value, field, fields) do
-    results = Enum.map(rules, fn callback ->
-      run_rule(callback, value, field, fields)
-    end)
-    |> Enum.filter(&is_binary/1)
+    results =
+      Enum.map(rules, fn callback ->
+        run_rule(callback, value, field, fields)
+      end)
+      |> Enum.filter(&is_binary/1)
 
     if Enum.empty?(results), do: nil, else: {:error, results}
   end
@@ -133,4 +161,6 @@ defmodule Request.Validator.Plug do
       {:error, reason} -> raise ArgumentError, "Could not load #{module}, reason: #{reason}"
     end
   end
+
+  defp rules_module, do: Application.get_env(:request_validator, :rules_module, DefaultRules)
 end
