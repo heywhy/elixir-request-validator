@@ -2,7 +2,7 @@ defmodule Request.Validator.Plug do
   alias Plug.Conn
   alias Ecto.Changeset
   alias Request.Validator
-  alias Request.Validator.{DefaultRules, Rules}
+  alias Request.Validator.{DefaultRules, Rules, Rules.Map_}
 
   import Plug.Conn
 
@@ -64,7 +64,7 @@ defmodule Request.Validator.Plug do
           module.rules()
       end
 
-    errors = collect_errors(conn, rules)
+    errors = collect_errors(conn.params, rules)
 
     cond do
       not module.authorize(conn) -> unauthorized(conn)
@@ -81,18 +81,18 @@ defmodule Request.Validator.Plug do
     end)
   end
 
-  defp collect_errors(conn, validations) do
-    Enum.reduce(validations, %{}, errors_collector(conn))
+  defp collect_errors(params, validations) do
+    Enum.reduce(validations, %{}, errors_collector(params))
   end
 
-  defp errors_collector(conn) do
+  defp errors_collector(params) do
     fn
       {field, %Rules.Bail{rules: rules}}, acc ->
-        value = Map.get(conn.params, to_string(field))
+        value = Map.get(params, to_string(field))
 
         result =
           Enum.find_value(rules, nil, fn callback ->
-            case run_rule(callback, value, field, conn.params) do
+            case run_rule(callback, value, field, params) do
               :ok ->
                 nil
 
@@ -106,11 +106,31 @@ defmodule Request.Validator.Plug do
           _ -> acc
         end
 
-      {field, vf}, acc ->
-        value = Map.get(conn.params, to_string(field))
+      {field, %Map_{attrs: rules}}, acc ->
+        value = Map.get(params, to_string(field))
 
-        case run_rules(vf, value, field, conn.params) do
-          {:error, rules} -> Map.put(acc, field, rules)
+        with %{} = value <- value,
+             result <- collect_errors(value, rules),
+             {true, _} <- {Enum.empty?(result), result} do
+          acc
+        else
+          nil ->
+            Map.put(acc, field, ["This field is expected to be a map"])
+
+          {false, result} ->
+            result =
+              result
+              |> Enum.map(fn {key, val} -> {"#{field}.#{key}", val} end)
+              |> Enum.into(%{})
+
+            Map.merge(acc, result)
+        end
+
+      {field, vf}, acc ->
+        value = Map.get(params, to_string(field))
+
+        case run_rules(vf, value, field, params) do
+          {:error, errors} -> Map.put(acc, field, errors)
           _ -> acc
         end
     end

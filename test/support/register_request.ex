@@ -9,12 +9,13 @@ defmodule RequestValidatorTest.RegisterRequest do
       password: ~w[required string confirmed]a,
       age: [:required, :numeric, {:min, 2}, {:max, 32}],
       year: [:required, :numeric, {:min, 1990}, {:max, 2000}],
-      mother_age: [:required, :numeric, {:gt, :age}]
-      # address: map(
-      #   line1: ~w[required string]a,
-      #   line2: ~w[string]a,
-      #   country: ~w[required string]a
-      # ),
+      mother_age: [:required, :numeric, {:gt, :age}],
+      address:
+        map(
+          line1: ~w[required string]a,
+          line2: ~w[string]a,
+          country: ~w[required string]a
+        )
       # documents: array(
       #   name: ~w[required string]a,
       #   file: ~w[required file]a,

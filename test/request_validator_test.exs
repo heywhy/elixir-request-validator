@@ -16,7 +16,7 @@ defmodule RequestValidatorTest do
 
   test "fails request validations" do
     conn =
-      conn(:post, "/api/hello", Jason.encode!(%{}))
+      conn(:post, "/api/hello", %{})
       |> Conn.put_req_header("content-type", "application/json")
       |> Conn.put_private(:phoenix_action, :register)
       |> ValidationPlug.call(@opts)
@@ -27,6 +27,21 @@ defmodule RequestValidatorTest do
     assert conn.resp_body =~ "This field is required"
   end
 
+  test "fails map validation" do
+    conn =
+      conn(:post, "/api/hello", %{address: %{}})
+      |> Conn.put_req_header("content-type", "application/json")
+      |> Conn.put_private(:phoenix_action, :register)
+      |> ValidationPlug.call(@opts)
+
+    assert conn.state == :sent
+    assert conn.status == 422
+    assert conn.resp_body =~ "email"
+    assert conn.resp_body =~ "This field is required"
+    assert conn.resp_body =~ "address.country"
+    assert conn.resp_body =~ "address.line1"
+  end
+
   test "passes request validations" do
     params = %{
       password_confirmation: "password",
@@ -35,7 +50,11 @@ defmodule RequestValidatorTest do
       name: "john doe",
       age: 31,
       year: 1995,
-      mother_age: 32
+      mother_age: 32,
+      address: %{
+        line1: "anywhere on earth",
+        country: "NGA"
+      }
     }
 
     conn =

@@ -30,6 +30,8 @@ defmodule Request.Validator.Rules do
         validate(result, "This field is required")
       end
 
+      def string(nil, _), do: :ok
+
       def string(value, _) do
         validate(is_binary(value), "This field must be a string.")
       end
