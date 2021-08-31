@@ -115,7 +115,7 @@ defmodule Request.Validator.Plug do
           acc
         else
           nil ->
-            Map.put(acc, field, ["This field is expected to be a map"])
+            Map.put(acc, field, ["This field is expected to be a map."])
 
           {false, result} ->
             result =
