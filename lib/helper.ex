@@ -1,5 +1,16 @@
 defmodule Request.Validator.Helper do
   @doc """
+  iex> Request.Validator.Helper.in_list(["male", "female"])
+  {:in_list, ~w[male female]}
+  iex> Request.Validator.Helper.in_list(~w[tech law finance])
+  {:in_list, ["tech", "law", "finance"]}
+  iex> Request.Validator.Helper.in_list(~w[doctor nurse nurse midwife specialist midwife doctor])
+  {:in_list, ~w[doctor nurse midwife specialist]}
+  """
+  @spec in_list(list(any())) :: {:in_list, list(any())}
+  def in_list(items) when is_list(items), do: {:in_list, Enum.uniq(items)}
+
+  @doc """
   iex> Request.Validator.Helper.gt(:age)
   {:gt, :age}
   iex> Request.Validator.Helper.gt(:year)

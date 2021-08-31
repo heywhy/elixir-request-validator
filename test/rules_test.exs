@@ -109,5 +109,12 @@ defmodule RequestValidator.RulesTest do
       assert {:error, "This field must be 4 characters."} = Rules.size("545627", 4)
       assert {:error, "This field must contain 4 items."} = Rules.size([1, 2, 3], 4)
     end
+
+    test "in_list/2" do
+      assert :ok = Rules.in_list("hello", ~w[hello world])
+      assert :ok = Rules.in_list("business", ~w[law business hospital])
+      assert :ok = Rules.in_list(22, [118, 22, 332, 54])
+      assert {:error, "This field is invalid."} = Rules.in_list(11, ~w[a b c 11 d])
+    end
   end
 end

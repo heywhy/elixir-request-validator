@@ -54,6 +54,11 @@ defmodule Request.Validator.Rules do
       def map(value, _) when is_nil(value) or is_map(value), do: :ok
       def map(value, _), do: {:error, "This field is expected to be a map."}
 
+      def in_list(value, list, opts \\ [])
+      def in_list(value, list, _) do
+        validate(Enum.member?(list, value), "This field is invalid.")
+      end
+
       def max(value, boundary, opts \\ [])
       def max(nil, _, _), do: :ok
 
