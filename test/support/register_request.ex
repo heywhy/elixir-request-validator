@@ -16,12 +16,13 @@ defmodule RequestValidatorTest.RegisterRequest do
           line1: required(:string),
           line2: ~w[string]a,
           country: required(:string)
+        ),
+      documents:
+        array(
+          file: [:string],
+          name: required(:string),
+          type: [:required, {:in_list, ~w[certificate memart]}]
         )
-      # documents: array(
-      #   name: required(:string),
-      #   file: ~w[required file]a,
-      #   type: [:required, {:in, ~w[cac_certificate memart]}]
-      # )
     ]
   end
 

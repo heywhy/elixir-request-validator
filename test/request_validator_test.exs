@@ -28,8 +28,10 @@ defmodule RequestValidatorTest do
   end
 
   test "fails map validation" do
+    params = %{address: %{}, documents: [%{}]}
+
     conn =
-      conn(:post, "/api/hello", %{address: %{}})
+      conn(:post, "/api/hello", params)
       |> Conn.put_req_header("content-type", "application/json")
       |> Conn.put_private(:phoenix_action, :register)
       |> ValidationPlug.call(@opts)
@@ -40,6 +42,7 @@ defmodule RequestValidatorTest do
     assert conn.resp_body =~ "This field is required"
     assert conn.resp_body =~ "address.country"
     assert conn.resp_body =~ "address.line1"
+    assert conn.resp_body =~ "documents.0.name"
   end
 
   test "passes request validations" do
@@ -55,7 +58,8 @@ defmodule RequestValidatorTest do
       address: %{
         line1: "anywhere on earth",
         country: "NGA"
-      }
+      },
+      documents: [%{name: "document.pdf", type: "certificate"}]
     }
 
     conn =

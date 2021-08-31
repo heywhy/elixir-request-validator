@@ -2,7 +2,7 @@ defmodule Request.Validator.Plug do
   alias Plug.Conn
   alias Ecto.Changeset
   alias Request.Validator
-  alias Request.Validator.{DefaultRules, Rules, Rules.Map_}
+  alias Request.Validator.{DefaultRules, Rules, Rules.Array, Rules.Map_}
 
   import Plug.Conn
 
@@ -106,17 +106,47 @@ defmodule Request.Validator.Plug do
           _ -> acc
         end
 
+      {field, %Array{attrs: rules}}, acc ->
+        value = Map.get(params, to_string(field))
+
+        with true <- is_list(value),
+             result <- Enum.map(value, &collect_errors(&1, rules)) do
+          # result <- Enum.reject(result, &Enum.empty?/1) do
+          result =
+            result
+            |> Enum.map(fn val ->
+              index = Enum.find_index(result, &(val == &1))
+
+              if Enum.empty?(val) do
+                nil
+              else
+                {index, val}
+              end
+            end)
+            |> Enum.reject(&is_nil/1)
+            |> Enum.reduce(%{}, fn {index, errors}, acc ->
+              errors =
+                errors
+                |> Enum.map(fn {key, val} -> {"#{field}.#{index}.#{key}", val} end)
+                |> Enum.into(%{})
+
+              Map.merge(acc, errors)
+            end)
+
+          Map.merge(acc, result)
+        else
+          _ ->
+            Map.put(acc, field, ["This field is expected to be an array."])
+        end
+
       {field, %Map_{attrs: rules}}, acc ->
         value = Map.get(params, to_string(field))
 
-        with %{} = value <- value,
+        with %{} <- value,
              result <- collect_errors(value, rules),
              {true, _} <- {Enum.empty?(result), result} do
           acc
         else
-          nil ->
-            Map.put(acc, field, ["This field is expected to be a map."])
-
           {false, result} ->
             result =
               result
@@ -124,6 +154,9 @@ defmodule Request.Validator.Plug do
               |> Enum.into(%{})
 
             Map.merge(acc, result)
+
+          _ ->
+            Map.put(acc, field, ["This field is expected to be a map."])
         end
 
       {field, vf}, acc ->

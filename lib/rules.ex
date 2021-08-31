@@ -1,19 +1,29 @@
 defmodule Request.Validator.Rules do
   defmodule Bail do
     defstruct rules: []
+
+    @type t :: %__MODULE__{rules: list(atom() | tuple())}
   end
 
   defmodule Map_ do
     defstruct attrs: []
+
+    @type t :: %__MODULE__{attrs: maybe_improper_list()}
   end
 
   defmodule Array do
     defstruct attrs: []
+    @type t :: %__MODULE__{attrs: list(atom() | tuple())}
   end
 
+  @spec bail(list(atom() | tuple())) :: Request.Validator.Rules.Bail.t()
   def bail(rules), do: %__MODULE__.Bail{rules: rules}
+
+  @spec map(maybe_improper_list()) :: Request.Validator.Rules.Map_.t()
   def map(attrs), do: %__MODULE__.Map_{attrs: attrs}
-  def array(attrs), do: %__MODULE__.Array{attrs: attrs}
+
+  @spec array(maybe_improper_list) :: Request.Validator.Rules.Array.t()
+  def array(attrs) when is_list(attrs), do: %__MODULE__.Array{attrs: attrs}
 
   defmacro __using__(_opts) do
     quote location: :keep do
