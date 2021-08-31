@@ -4,21 +4,21 @@ defmodule RequestValidatorTest.RegisterRequest do
   @impl Request.Validator
   def rules(_) do
     [
-      email: ~w[required email]a,
-      name: ~w[required string]a,
-      password: ~w[required string confirmed]a,
-      gender: [:required, in_list(~w[male female])],
-      age: [:required, :numeric, min(2), max(32)],
+      email: required(:email),
+      name: required(:string),
+      password: required(~w[string confirmed]a),
+      gender: required(in_list(~w[male female])),
+      age: required([:numeric, min(2), max(32)]),
       year: [:required, :numeric, min(1990), max(2000)],
       mother_age: [:required, :numeric, gt(:age)],
       address:
         map(
-          line1: ~w[required string]a,
+          line1: required(:string),
           line2: ~w[string]a,
-          country: ~w[required string]a
+          country: required(:string)
         )
       # documents: array(
-      #   name: ~w[required string]a,
+      #   name: required(:string),
       #   file: ~w[required file]a,
       #   type: [:required, {:in, ~w[cac_certificate memart]}]
       # )

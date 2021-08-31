@@ -47,6 +47,18 @@ defmodule Request.Validator.Helper do
   def min(boundary), do: {:min, boundary}
 
   @doc """
+  iex> Request.Validator.Helper.required(:string)
+  ~w[required string]a
+  iex> Request.Validator.Helper.required([:string, :email, {:max, 100}])
+  [:required, :string, :email, {:max, 100}]
+  iex> Request.Validator.Helper.required({:max, 100})
+  [:required, {:max, 100}]
+  """
+  def required(rule) when is_atom(rule), do: required([rule])
+  def required(rule) when is_tuple(rule), do: required([rule])
+  def required(rules) when is_list(rules), do: [:required] ++ rules
+
+  @doc """
   iex> Request.Validator.Helper.size(30)
   {:size, 30}
   iex> Request.Validator.Helper.size(40)
