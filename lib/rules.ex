@@ -55,6 +55,7 @@ defmodule Request.Validator.Rules do
       def map(value, _), do: {:error, "This field is expected to be a map."}
 
       def in_list(value, list, opts \\ [])
+
       def in_list(value, list, _) do
         validate(Enum.member?(list, value), "This field is invalid.")
       end
