@@ -18,6 +18,7 @@ defmodule Request.Validator do
     quote do
       use Norm
       import Request.Validator.Rules
+      import Request.Validator.Helper
 
       @before_compile Request.Validator
       @behaviour Request.Validator

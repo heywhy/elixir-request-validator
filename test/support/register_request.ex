@@ -7,9 +7,9 @@ defmodule RequestValidatorTest.RegisterRequest do
       email: ~w[required email]a,
       name: ~w[required string]a,
       password: ~w[required string confirmed]a,
-      age: [:required, :numeric, {:min, 2}, {:max, 32}],
-      year: [:required, :numeric, {:min, 1990}, {:max, 2000}],
-      mother_age: [:required, :numeric, {:gt, :age}],
+      age: [:required, :numeric, min(2), max(32)],
+      year: [:required, :numeric, min(1990), max(2000)],
+      mother_age: [:required, :numeric, gt(:age)],
       address:
         map(
           line1: ~w[required string]a,

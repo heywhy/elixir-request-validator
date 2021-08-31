@@ -7,6 +7,8 @@ defmodule RequestValidatorTest do
   alias RequestValidatorTest.RegisterRequest
   alias RequestValidatorTest.EctoRulesRequest
 
+  doctest(Request.Validator.Helper)
+
   @opts ValidationPlug.init(
           register: RegisterRequest,
           ecto_rules: EctoRulesRequest
