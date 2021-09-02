@@ -2,6 +2,16 @@
 
 A blazing fast request validator for your phoenix app, which validates a request body before hitting the request handler in the controller.
 
+- [Why RequestValidator](#why-request-validator)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Ecto Support](#ecto-support)
+- [Custom Validation Rules](#custom-validation-rules)
+
+## Why RequestValidator
+
+It's common for a web service to validate incoming data. The most common layer where this is done is at the controller level and this sometimes leads to having a bloated controller. But with RequestValidator, you move the validation logic to a layer just before the controller and your controller is now free from doing validation.
+
 ## Installation
 
 The package can be installed by adding `request_validator` to your list of dependencies in `mix.exs`:
@@ -9,89 +19,87 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.4"}
+    {:request_validator, "~> 0.5"}
   ]
 end
 ```
 
-## Basic Usage
+## Usage
+
+First of all, you need to define a validation schema to be used against the incoming data.
 
 ```elixir
-  defmodule App.UserController do
-    use AppWeb, :controller
-
-    plug Request.Validation.Plug, %{
-      login: App.Requests.Login,
-      register: App.Requests.Registration
-    }
-
-    def login(conn, params) do
-      ...
-    end
-
-    def register(conn, params) do
-      ...
-    end
+defmodule App.Requests.Registration do
+  use Request.Validator
+  
+  # Get the validation rules that apply to the incoming request.
+  @impl Request.Validator
+  def rules(_) do
+    [
+      email: ~w[required email]a,
+      first_name: ~w[required string]a,
+      last_name: ~w[required string]a,
+      password: [:required, :string, {:min, 8}, :confirmed]
+    ]
   end
 
-  defmodule App.Requests.Registration do
-    use Request.Validator
-    
-    @behaviour Request.Validator
+  # Determine if the user is authorized to make this request.
+  @impl Request.Validator
+  def authorize(_), do: true
+end
+```
 
-    @impl Request.Validator
-    @spec rules(Plug.Conn.t()) :: map()|keyword()
-    def rules(_) do
-      %{
-        "email" => [is_required(), is_email()],
-        "name" => [is_required(), is_string()],
-        "password" => [is_required(), is_string()],
-        "age" => [is_required(), is_numeric(), is_min(18)]
-      }
+The above validation schema can now be used;
+
+```elixir
+defmodule App.UserController do
+  use AppWeb, :controller
+
+  plug Request.Validation.Plug,
+    register: App.Requests.Registration
+
+  def register(conn, params) do
+    case App.UserService.create(params) do
+      :ok ->
+        conn
+        |> put_status(201)
+        |> json(%{message: "Account created successfully"})
+      {:error, msg} ->
+        conn
+        |> put_status(500)
+        |> json(%{message: msg})
     end
-
-    @impl Request.Validator
-    @spec authorize(Plug.Conn.t()) :: boolean()
-    def authorize(_), do: true
   end
+end
+```
 
-  defmodule App.Requests.Login do
-    use Request.Validator
-    
-    @behaviour Request.Validator
+As you can see in the controller, the `register` handler does not need to worry about validating the incoming request because `RequestValidator` will handle that automatically and send the right response if the request fails validation based on the given validation schema.
 
-    @impl Request.Validator
-    @spec rules(Plug.Conn.t()) :: map()|keyword()
-    def rules(_) do
-      %{
-        "email" => [is_required(), is_email()],
-        "password" => [is_required(), is_string()]
-      }
-    end
+You can specify validation schema for each of the handlers in a controller:
 
-    @impl Request.Validator
-    @spec authorize(Plug.Conn.t()) :: boolean()
-    def authorize(_), do: true
-  end
+```elixir
+defmodule App.UserController do
+  use AppWeb, :controller
+
+  plug Request.Validation.Plug,
+    login: App.Requests.Login,
+    register: App.Requests.Registration
+
+  ...
+end
 ```
 
 Full documentation can be found at [https://hexdocs.pm/request_validator](https://hexdocs.pm/request_validator).
 
 ## Ecto Support
 
-In some cases, your application already makes use of the ecto library. I'm glad to tell you that this library has support when the rule method returns a `Ecto.Changeset` struct, so that you can
-make use of the advantages provided by this library without rewritting your validation logic. See example below:
+In some cases, your application already makes use of the ecto library. I'm glad to tell you that this library has support when the rule method returns an `Ecto.Changeset` struct so that you can
+make use of the advantages provided by this library without rewriting your validation logic. See the example below:
 
 ```elixir
-defmodule App.Requests.TestRequest do
-  use Request.Validator
+defmodule App.SomeEctoSchema do
   use Ecto.Schema
-
-  alias App.Requests.TestRequest
-
   import Ecto.Changeset
-
-  @behaviour Request.Validator
 
   embedded_schema do
     field(:name, :string)
@@ -101,138 +109,69 @@ defmodule App.Requests.TestRequest do
   end
 
   @doc false
-  defp changeset(contact, attrs) do
-    contact
+  def changeset(attrs), do: changeset(%__MODULE__{}, attrs)
+
+  @doc false
+  def changeset(struct, attrs) do
+    struct
     |> cast(attrs, [:name, :email, :age, :password])
     |> validate_required([:name, :email, :age, :password])
     |> validate_number(:age, less_than_or_equal_to: 32)
   end
+end
+
+defmodule App.Requests.TestRequest do
+  use Request.Validator
+
+  alias App.SomeEctoSchema
 
   @impl Request.Validator
-  def rules(conn) do
-    %TestRequest{} |> changeset(conn.params)
-  end
+  def rules(conn), do: SomeEctoSchema.changeset(conn.params)
 
   @impl Request.Validator
-  @spec authorize(Plug.Conn.t())::boolean()
   def authorize(_), do: true
 end
 ```
 
 ## Custom Validation Rules
 
-This library provides a variety of helpful rules, however, you might want to define some rules to house your validation logic. To achieve this, you need to create your own rules and validation messages module, see example/steps below;
+This library provides a variety of helpful rules, however, you might want to define some rules to house your validation logic. To achieve this, you need to create your own rules module, extend the default rules and update the library configuration;
 
 ```elixir
-# lib/validations/rules.ex
 defmodule App.Validation.Rules do
-  alias App.Repo
+  use Request.Validator.Rules # grab default rules provided by the library
 
-  require Request.Validator.Helper
-
-  import Ecto.Query
-  import Request.Validator.Helper
-
-  with_param(:exists, fn ({model, field}, value, _) ->
-    result =
-      from(m in model, where: field(m, ^field) == ^value)
-      |> Repo.exists?()
-
-    case result do
-      true ->
+  @spec uppercase(binary(), keyword()) :: :ok | {:error, binary()}
+  def uppercase(value, fields: _fields, field: _field) do
+    case String.upcase(value) do
+      ^value ->
         :ok
       _ ->
-        {:error, "This field doesn't exists."}
+        {:error, "This field must be uppercase."}
     end
-  end)
-
-  with_param(:unique, fn(params, value, _) ->
-    case exists(params).(value, nil) do
-      :ok ->
-        {:error, "This field has already been taken."}
-      {:error, _} ->
-        :ok
-    end
-  end)
+  end
 end
-
 ```
 
-After adding the rule which is a method, then you can make use of the rule in any of your request validator module.
+After defining a module with your custom rules, you will need to update your application configuration:
 
 ```elixir
-  defmodule App.Requests.CourseRegistration do
-    use Request.Validator
-    
-    @behaviour Request.Validator
-
-    @impl Request.Validator
-    @spec rules(Plug.Conn.t()) :: map()|keyword()
-    def rules(_) do
-      %{
-        "email" => [is_required(), is_email()],
-        "name" => [is_required(), is_string()],
-        "age" => [is_required(), is_numeric(), is_min(18)],
-        "course" => [is_required(), is_string(), exists({App.Course, :id})]
-      }
-    end
-
-    @impl Request.Validator
-    @spec authorize(Plug.Conn.t()) :: boolean()
-    def authorize(_), do: true
-  end
+config :request_validator, rules_module: App.Validation.Rules
 ```
 
-**NB:** You should use the `define_rule` macro if your validation function doesn't accept argument like the `exists` rule. And you can also define a function directly and reference using *function capturing*, e.g. `&rule_validator/2`.
+Once the new rule has been added and configuration updated, it can now be used:
 
-## Rules
+```elixir
+# ...
+  def rules(_) do
+    [
+      name: ~w[required string uppercase]a
+    ]
+  end
+# ...
+```
 
-Below is a list of all available validation rules and their function:
-
-### bail
-
-Stop running validation rules after the first validation failure. Example, `bail([is_required(), is_string()])`
-
-### is_confirmed()
-
-The field under validation must have a matching field of `bar_confirmation`. For example, if the field under validation is `password`, a matching `password_confirmation` field must be present in the input.
-
-
-### is_email
-
-The field under validation must be formatted as an e-mail address
-
-### is_gt(*field*)
-
-The field under validation must be greater than the given field. The two fields must be of the same type
-
-### is_lt(*field*)
-
-The field under validation must be less than the given *field*. The two fields must be of the same type
-
-### is_max(*value*)
-
-The field under validation must be less than or equal to a maximum *value*. Supported types are strings, numerics and list.
-
-### is_min(*value*)
-
-The field under validation must have a minimum *value*. Supported types are strings, numerics and list.
-
-### is_numeric()
-
-The field under validation must be numeric.
-
-### is_required()
-
-The field under validation must be present in the input data and not empty. A field is considered "empty" if one of the following conditions are true:
-
-- The value is nil.
-- The value is an empty string.
-- The value is an empty list or map.
-
-### is_string()
-
-The field under validation must be a string.
+Note that if your rule accepts options/parameters, its function definition should have an arity of 3, and the second argument will be the option provided when the rule is used, ex: `{:custom_rule, options}`
 
 ## TODOS
 
