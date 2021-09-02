@@ -1,4 +1,4 @@
-defmodule RequestValidator.MixProject do
+defmodule Request.Validator.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/heywhy/elixir-request-validator"
@@ -6,7 +6,7 @@ defmodule RequestValidator.MixProject do
   def project do
     [
       app: :request_validator,
-      version: "0.5.0",
+      version: "0.5.1",
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
