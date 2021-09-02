@@ -116,5 +116,15 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.in_list(22, [118, 22, 332, 54])
       assert {:error, "This field is invalid."} = Rules.in_list(11, ~w[a b c 11 d])
     end
+
+    test "boolean/2" do
+      assert :ok = Rules.boolean(1)
+      assert :ok = Rules.boolean(0)
+      assert :ok = Rules.boolean("1")
+      assert :ok = Rules.boolean("0")
+      assert :ok = Rules.boolean(true)
+      assert :ok = Rules.boolean(false)
+      assert {:error, "This field must be true or false"} = Rules.boolean("2")
+    end
   end
 end

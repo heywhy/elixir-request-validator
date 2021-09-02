@@ -190,6 +190,11 @@ defmodule Request.Validator.Rules do
         validate(value_size(value) === boundary, msg)
       end
 
+      def boolean(value, opts \\ [])
+      def boolean(value, _) when is_number(value) and value in [0, 1], do: :ok
+      def boolean(value, _) when is_binary(value) and value in ~w[0 1], do: :ok
+      def boolean(value, _), do: validate(is_boolean(value), "This field must be true or false")
+
       defp value_size(value) when is_number(value), do: value
       defp value_size(value) when is_list(value), do: Enum.count(value)
       defp value_size(value) when is_binary(value), do: String.length(value)
