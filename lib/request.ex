@@ -2,7 +2,7 @@ defmodule Request.Validator do
   @doc ~S"""
   Get the validation rules that apply to the request.
   """
-  @callback rules(Plug.Conn.t()) :: Norm.Core.Schema.t()
+  @callback rules(Plug.Conn.t()) :: keyword()
 
   @doc ~S"""
   Determine if the user is authorized to make this request.
@@ -16,7 +16,6 @@ defmodule Request.Validator do
 
   defmacro __using__(_) do
     quote do
-      use Norm
       import Request.Validator.Rules
       import Request.Validator.Helper
 
