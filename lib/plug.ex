@@ -178,11 +178,11 @@ defmodule Request.Validator.Plug do
         cb when is_atom(cb) ->
           {cb, [value, opts]}
 
-        {cb, params} ->
+        {cb, params} when is_atom(cb) ->
           {cb, [value, params, opts]}
       end
 
-    case apply(module, callback, args) do
+    case apply(module, :run_rule, [callback] ++ args) do
       :ok -> true
       {:error, msg} -> msg
     end

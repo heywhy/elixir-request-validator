@@ -27,8 +27,12 @@ defmodule Request.Validator.Rules do
 
   defmacro __using__(_opts) do
     quote location: :keep do
+      @implicit_rules ~w[required]a
+
       def email(value, opts \\ [])
-      def email(nil, _), do: :ok
+
+      def email(value, _) when is_nil(value) or not is_binary(value),
+        do: {:error, "This field must be a valid email address."}
 
       def email(value, _) do
         validate(EmailChecker.valid?(value || ""), "This field must be a valid email address.")
@@ -37,6 +41,7 @@ defmodule Request.Validator.Rules do
       def required(value, opts \\ [])
 
       def required(value, _) when is_boolean(value), do: :ok
+
       def required(value, _) do
         result =
           case value_size(value) do
@@ -51,22 +56,22 @@ defmodule Request.Validator.Rules do
       end
 
       def string(value, opts \\ [])
-      def string(nil, _), do: :ok
 
       def string(value, _) do
         validate(is_binary(value), "This field must be a string.")
       end
 
       def numeric(value, opts \\ [])
-      def numeric(nil, _), do: :ok
 
       def numeric(value, _) do
         validate(is_number(value), "This field must be a number.")
       end
 
       def map(value, opts \\ [])
-      def map(value, _) when is_nil(value) or is_map(value), do: :ok
-      def map(value, _), do: {:error, "This field is expected to be a map."}
+
+      def map(value, _) do
+        validate(is_map(value), "This field is expected to be a map.")
+      end
 
       def in_list(value, list, opts \\ [])
 
@@ -75,7 +80,6 @@ defmodule Request.Validator.Rules do
       end
 
       def max(value, boundary, opts \\ [])
-      def max(nil, _, _), do: :ok
 
       def max(value, boundary, _opts) do
         msg =
@@ -94,7 +98,6 @@ defmodule Request.Validator.Rules do
       end
 
       def min(value, boundary, opts \\ [])
-      def min(nil, _, _), do: :ok
 
       def min(value, boundary, _opts) do
         msg =
@@ -111,8 +114,6 @@ defmodule Request.Validator.Rules do
 
         validate(value_size(value) >= boundary, msg)
       end
-
-      def gt(nil, _, _), do: :ok
 
       def gt(value, boundary, opts) do
         other_field =
@@ -140,8 +141,6 @@ defmodule Request.Validator.Rules do
             {:error, "This field and #{boundary} has to be of same type."}
         end
       end
-
-      def lt(nil, _, _), do: :ok
 
       def lt(value, boundary, opts) do
         other_field =
@@ -198,6 +197,26 @@ defmodule Request.Validator.Rules do
       def boolean(value, _) when is_number(value) and value in [0, 1], do: :ok
       def boolean(value, _) when is_binary(value) and value in ~w[0 1], do: :ok
       def boolean(value, _), do: validate(is_boolean(value), "This field must be true or false")
+
+      def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
+
+      def run_rule(rule, value, params, opts) do
+        case should_validate(rule, value, opts) do
+          false ->
+            :ok
+
+          true ->
+            if function_exported?(__MODULE__, rule, 3) do
+              apply(__MODULE__, rule, [value, params, opts])
+            else
+              apply(__MODULE__, rule, [value, opts])
+            end
+        end
+      end
+
+      defp should_validate(rule, value, field: field, fields: fields) do
+        Map.has_key?(fields, to_string(field)) || rule in @implicit_rules
+      end
 
       defp value_size(value) when is_number(value), do: value
       defp value_size(value) when is_list(value) or is_map(value), do: Enum.count(value)

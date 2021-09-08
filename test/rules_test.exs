@@ -5,9 +5,11 @@ defmodule RequestValidator.RulesTest do
 
   describe "default rules" do
     test "email/2" do
-      assert :ok = Rules.email(nil)
       assert :ok = Rules.email("person@mail.com")
 
+      assert {:error, "This field must be a valid email address."} = Rules.email(12)
+      assert {:error, "This field must be a valid email address."} = Rules.email([])
+      assert {:error, "This field must be a valid email address."} = Rules.email(nil)
       assert {:error, "This field must be a valid email address."} = Rules.email("invalid email")
     end
 
@@ -24,8 +26,8 @@ defmodule RequestValidator.RulesTest do
     end
 
     test "string/2" do
-      assert :ok = Rules.string(nil)
       assert :ok = Rules.string("random 12")
+      assert {:error, "This field must be a string."} = Rules.string(nil)
       assert {:error, "This field must be a string."} = Rules.string(1212)
     end
 
@@ -117,6 +119,7 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.in_list("hello", ~w[hello world])
       assert :ok = Rules.in_list("business", ~w[law business hospital])
       assert :ok = Rules.in_list(22, [118, 22, 332, 54])
+      assert {:error, "This field is invalid."} = Rules.in_list(nil, ~w[a b c])
       assert {:error, "This field is invalid."} = Rules.in_list(11, ~w[a b c 11 d])
     end
 
