@@ -30,7 +30,7 @@ defmodule Request.Validator.Plug do
   end
 
   defp unauthorized(conn) do
-    json_resp(conn, 401, %{message: "Unauthorized"}) |> halt
+    json_resp(conn, 403, %{message: "Forbidden"}) |> halt
   end
 
   @doc ~S"""
