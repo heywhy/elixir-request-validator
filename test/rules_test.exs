@@ -12,10 +12,13 @@ defmodule RequestValidator.RulesTest do
     end
 
     test "required/2" do
-      assert :ok = Rules.required([])
-      assert :ok = Rules.required(%{})
+      assert :ok = Rules.required([1])
+      assert :ok = Rules.required(%{a: 1})
       assert :ok = Rules.required(1212)
       assert :ok = Rules.required("random")
+      assert :ok = Rules.required(false)
+      assert {:error, "This field is required."} = Rules.required([])
+      assert {:error, "This field is required."} = Rules.required(%{})
       assert {:error, "This field is required."} = Rules.required("")
       assert {:error, "This field is required."} = Rules.required(nil)
     end

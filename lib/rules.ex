@@ -36,12 +36,16 @@ defmodule Request.Validator.Rules do
 
       def required(value, opts \\ [])
 
+      def required(value, _) when is_boolean(value), do: :ok
       def required(value, _) do
         result =
-          is_list(value) ||
-            is_map(value) ||
-            is_number(value) ||
-            (!is_nil(value) && String.length(value) > 0)
+          case value_size(value) do
+            nil ->
+              false
+
+            length ->
+              length > 0
+          end
 
         validate(result, "This field is required.")
       end
@@ -196,8 +200,9 @@ defmodule Request.Validator.Rules do
       def boolean(value, _), do: validate(is_boolean(value), "This field must be true or false")
 
       defp value_size(value) when is_number(value), do: value
-      defp value_size(value) when is_list(value), do: Enum.count(value)
+      defp value_size(value) when is_list(value) or is_map(value), do: Enum.count(value)
       defp value_size(value) when is_binary(value), do: String.length(value)
+      defp value_size(_value), do: nil
 
       defp same_type(value1, value2) when is_number(value1) and is_number(value2), do: true
       defp same_type(value1, value2) when is_binary(value1) and is_binary(value2), do: true
