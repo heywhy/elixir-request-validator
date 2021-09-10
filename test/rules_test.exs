@@ -132,5 +132,20 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.boolean(false)
       assert {:error, "This field must be true or false"} = Rules.boolean("2")
     end
+
+    test "url/2" do
+      assert :ok = Rules.url("https://my.app")
+      assert :ok = Rules.url("https://test.app/webhook")
+      assert :ok = Rules.url("https://test-23.app/webhook")
+      assert {:error, "This field must be a valid URL."} = Rules.url(nil)
+      assert {:error, "This field must be a valid URL."} = Rules.url("//elixir-lang.com")
+    end
+
+    test "active_url/2" do
+      assert :ok = Rules.active_url("https://google.com/search")
+      assert :ok = Rules.active_url("https://elixir-lang.org")
+      assert {:error, "This field is not a valid URL."} = Rules.active_url(nil)
+      assert {:error, "This field is not a valid URL."} = Rules.active_url("//elixir-lang.com")
+    end
   end
 end

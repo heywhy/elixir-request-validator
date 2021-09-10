@@ -19,7 +19,7 @@ The package can be installed by adding `request_validator` to your list of depen
 ```elixir
 def deps do
   [
-    {:request_validator, "~> 0.5"}
+    {:request_validator, "~> 0.6"}
   ]
 end
 ```

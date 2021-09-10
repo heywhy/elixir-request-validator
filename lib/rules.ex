@@ -198,6 +198,34 @@ defmodule Request.Validator.Rules do
       def boolean(value, _) when is_binary(value) and value in ~w[0 1], do: :ok
       def boolean(value, _), do: validate(is_boolean(value), "This field must be true or false")
 
+      def url(value, opts \\ [])
+
+      def url(value, _) when is_binary(value) do
+        case URI.parse(value) do
+          %URI{scheme: scheme, host: host, port: port}
+          when is_binary(scheme) and is_binary(host) and is_integer(port) ->
+            :ok
+
+          _ ->
+            {:error, "This field must be a valid URL."}
+        end
+      end
+
+      def url(_value, _), do: {:error, "This field must be a valid URL."}
+
+      def active_url(value, opts \\ [])
+
+      def active_url(value, _) do
+        with :ok <- url(value),
+             %URI{host: host} <- URI.parse(value),
+             {:ok, _} <- :inet.gethostbyname(to_charlist(host)) do
+          :ok
+        else
+          _ ->
+            {:error, "This field is not a valid URL."}
+        end
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do
