@@ -1,4 +1,6 @@
 defmodule Request.Validator.Helper do
+  alias Request.Validator.Rules.Map_
+
   @doc """
   iex> Request.Validator.Helper.in_list(["male", "female"])
   {:in_list, ~w[male female]}
@@ -66,4 +68,14 @@ defmodule Request.Validator.Helper do
   """
   @spec size(number()) :: {:size, number()}
   def size(boundary), do: {:size, boundary}
+
+  @doc """
+  iex> alias Request.Validator.{Helper, Rules}
+  [Request.Validator.Helper, Request.Validator.Rules]
+  iex> Helper.nullable(Rules.map(name: ~w[required string]a))
+  %Rules.Map_{attrs: [name: ~w[required string]a], nullable: true}
+  iex> Rules.map(name: ~w[required string]a)
+  %Rules.Map_{attrs: [name: ~w[required string]a], nullable: false}
+  """
+  def nullable(%Map_{} = map), do: struct!(map, %{nullable: true})
 end

@@ -6,7 +6,7 @@ defmodule Request.Validator.Rules do
   end
 
   defmodule Map_ do
-    defstruct attrs: []
+    defstruct attrs: [], nullable: false
 
     @type t :: %__MODULE__{attrs: maybe_improper_list()}
   end

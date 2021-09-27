@@ -139,7 +139,7 @@ defmodule Request.Validator.Plug do
             Map.put(acc, field, ["This field is expected to be an array."])
         end
 
-      {field, %Map_{attrs: rules}}, acc ->
+      {field, %Map_{attrs: rules, nullable: nullable}}, acc ->
         value = Map.get(params, to_string(field))
 
         with %{} <- value,
@@ -155,8 +155,14 @@ defmodule Request.Validator.Plug do
 
             Map.merge(acc, result)
 
-          _ ->
-            Map.put(acc, field, ["This field is expected to be a map."])
+          val ->
+            cond do
+              nullable && is_nil(val) ->
+                acc
+
+              true ->
+                Map.put(acc, field, ["This field is expected to be a map."])
+            end
         end
 
       {field, vf}, acc ->
