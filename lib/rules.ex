@@ -226,6 +226,16 @@ defmodule Request.Validator.Rules do
         end
       end
 
+      def file(value, _opts \\ []) do
+        case value do
+          %Plug.Upload{} ->
+            :ok
+
+          _ ->
+            {:error, "This field must be a file."}
+        end
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do

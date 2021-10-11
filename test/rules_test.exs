@@ -147,5 +147,12 @@ defmodule RequestValidator.RulesTest do
       assert {:error, "This field is not a valid URL."} = Rules.active_url(nil)
       assert {:error, "This field is not a valid URL."} = Rules.active_url("//elixir-lang.com")
     end
+
+    test "file/2" do
+      file = Plug.Upload.random_file!("request_validator_test")
+
+      assert :ok = Rules.file(%Plug.Upload{path: file, filename: "test.png"})
+      assert {:error, "This field must be a file."} = Rules.file(nil)
+    end
   end
 end
