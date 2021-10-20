@@ -4,7 +4,7 @@ defmodule RequestValidatorTest.RegisterRequest do
   @impl Request.Validator
   def rules(_) do
     [
-      email: required(:email),
+      email: [:required, :email, unique(&is_unique_email?/2)],
       name: required(:string),
       password: required(~w[string confirmed]a),
       gender: required(in_list(~w[male female])),
@@ -28,4 +28,7 @@ defmodule RequestValidatorTest.RegisterRequest do
 
   @impl Request.Validator
   def authorize(_), do: true
+
+  def is_unique_email?("test@gmail.com", _opts), do: true
+  def is_unique_email?(_val, _opts), do: false
 end

@@ -298,7 +298,7 @@ defmodule Request.Validator.Rules do
 
       defp has_not_failed_presence_rule?(rule, field, errors) do
         if rule in [:unique, :exists] do
-          Map.has_key?(errors, field)
+          not Map.has_key?(errors, field)
         else
           true
         end
