@@ -92,7 +92,7 @@ defmodule Request.Validator.Plug do
 
         result =
           Enum.find_value(rules, nil, fn callback ->
-            case run_rule(callback, value, field, params) do
+            case run_rule(callback, value, field, params, acc) do
               :ok ->
                 nil
 
@@ -168,15 +168,15 @@ defmodule Request.Validator.Plug do
       {field, vf}, acc ->
         value = Map.get(params, to_string(field))
 
-        case run_rules(vf, value, field, params) do
+        case run_rules(vf, value, field, params, acc) do
           {:error, errors} -> Map.put(acc, field, errors)
           _ -> acc
         end
     end
   end
 
-  defp run_rule(callback, value, field, fields) do
-    opts = [field: field, fields: fields]
+  defp run_rule(callback, value, field, fields, errors) do
+    opts = [field: field, fields: fields, errors: errors]
     module = rules_module()
 
     {callback, args} =
@@ -194,10 +194,10 @@ defmodule Request.Validator.Plug do
     end
   end
 
-  defp run_rules(rules, value, field, fields) do
+  defp run_rules(rules, value, field, fields, errors) do
     results =
       Enum.map(rules, fn callback ->
-        run_rule(callback, value, field, fields)
+        run_rule(callback, value, field, fields, errors)
       end)
       |> Enum.filter(&is_binary/1)
 

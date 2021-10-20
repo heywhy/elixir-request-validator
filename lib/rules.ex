@@ -169,7 +169,8 @@ defmodule Request.Validator.Rules do
         end
       end
 
-      def confirmed(value, field: field, fields: fields) do
+      def confirmed(value, opts) do
+        [field: field, fields: fields] = Keyword.take(opts, ~w[field fields]a)
         path = "#{field}_confirmation"
 
         validate(value == fields[path], "This field confirmation does not match.")
@@ -236,6 +237,30 @@ defmodule Request.Validator.Rules do
         end
       end
 
+      def unique(value, callback, opts \\ [])
+
+      def unique(value, callback, opts) do
+        case callback.(value, opts) do
+          true ->
+            :ok
+
+          false ->
+            {:error, "This field has already been taken."}
+        end
+      end
+
+      def exists(value, callback, opts \\ [])
+
+      def exists(value, callback, opts) do
+        case callback.(value, opts) do
+          true ->
+            :ok
+
+          false ->
+            {:error, "This selected field is invalid."}
+        end
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do
@@ -252,10 +277,6 @@ defmodule Request.Validator.Rules do
         end
       end
 
-      defp should_validate(rule, value, field: field, fields: fields) do
-        Map.has_key?(fields, to_string(field)) || rule in @implicit_rules
-      end
-
       defp value_size(value) when is_number(value), do: value
       defp value_size(value) when is_list(value) or is_map(value), do: Enum.count(value)
       defp value_size(value) when is_binary(value), do: String.length(value)
@@ -265,6 +286,23 @@ defmodule Request.Validator.Rules do
       defp same_type(value1, value2) when is_binary(value1) and is_binary(value2), do: true
       defp same_type(value1, value2) when is_list(value1) and is_list(value2), do: true
       defp same_type(_value1, _value2), do: false
+
+      defp should_validate(rule, value, field: field, fields: fields, errors: errors) do
+        is_present_or_implicit_rules?(rule, field, fields) &&
+          has_not_failed_presence_rule?(rule, field, errors)
+      end
+
+      def is_present_or_implicit_rules?(rule, field, fields) do
+        Map.has_key?(fields, to_string(field)) || rule in @implicit_rules
+      end
+
+      defp has_not_failed_presence_rule?(rule, field, errors) do
+        if rule in [:unique, :exists] do
+          Map.has_key?(errors, field)
+        else
+          true
+        end
+      end
 
       defp validate(condition, msg) do
         if !condition do

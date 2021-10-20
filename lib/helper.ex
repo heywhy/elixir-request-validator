@@ -78,4 +78,11 @@ defmodule Request.Validator.Helper do
   %Rules.Map_{attrs: [name: ~w[required string]a], nullable: false}
   """
   def nullable(%Map_{} = map), do: struct!(map, %{nullable: true})
+
+  @doc """
+  iex> alias Request.Validator.Helper
+  Request.Validator.Helper
+  iex> {:unique, _} = Helper.unique(&(&1 == 10))
+  """
+  def unique(callback), do: {:unique, callback}
 end

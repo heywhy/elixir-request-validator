@@ -154,5 +154,21 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.file(%Plug.Upload{path: file, filename: "test.png"})
       assert {:error, "This field must be a file."} = Rules.file(nil)
     end
+
+    test "unique/2" do
+      assert :ok = Rules.unique("username", fn _username, _opts -> true end)
+
+      assert {:error, "This field has already been taken."} =
+               Rules.unique("existing_username", fn
+                 "existing_username", _opts -> false
+               end)
+    end
+
+    test "exists/2" do
+      assert :ok = Rules.exists("existing user", fn "existing user", _opts -> true end)
+
+      assert {:error, "This selected field is invalid."} =
+               Rules.exists("non existing user", fn _value, _opts -> false end)
+    end
   end
 end
