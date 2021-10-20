@@ -261,6 +261,13 @@ defmodule Request.Validator.Rules do
         end
       end
 
+      def alpha_dash(value, _opts \\ []) do
+        validate(
+          String.match?(value, ~r/^[\d\w_-]+$/),
+          "This field must only contain letters, numbers, dashes and underscores."
+        )
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do

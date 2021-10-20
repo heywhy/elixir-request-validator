@@ -170,5 +170,12 @@ defmodule RequestValidator.RulesTest do
       assert {:error, "This selected field is invalid."} =
                Rules.exists("non existing user", fn _value, _opts -> false end)
     end
+
+    test "alpha_dash/2" do
+      assert :ok = Rules.alpha_dash("valid_charac123-29")
+
+      assert {:error, "This field must only contain letters, numbers, dashes and underscores."} =
+               Rules.alpha_dash("valid$_charac123-29@")
+    end
   end
 end
