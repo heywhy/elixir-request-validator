@@ -268,6 +268,12 @@ defmodule Request.Validator.Rules do
         )
       end
 
+      def list(value, opts \\ [])
+
+      def list(value, _) do
+        validate(is_list(value), "This field must be a list.")
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do

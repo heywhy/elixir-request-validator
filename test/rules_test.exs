@@ -177,5 +177,10 @@ defmodule RequestValidator.RulesTest do
       assert {:error, "This field must only contain letters, numbers, dashes and underscores."} =
                Rules.alpha_dash("valid$_charac123-29@")
     end
+
+    test "list/2" do
+      assert :ok = Rules.list([])
+      assert {:error, "This field must be a list."} = Rules.list("valid$_charac123-29@")
+    end
   end
 end

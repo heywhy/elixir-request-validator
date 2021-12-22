@@ -2,6 +2,8 @@ defmodule Request.Validator.Helper do
   alias Request.Validator.Rules.Map_
 
   @doc """
+  A wrapper around the `{:in_list, options}` rule.
+
   iex> Request.Validator.Helper.in_list(["male", "female"])
   {:in_list, ~w[male female]}
   iex> Request.Validator.Helper.in_list(~w[tech law finance])
@@ -10,9 +12,11 @@ defmodule Request.Validator.Helper do
   {:in_list, ~w[doctor nurse midwife specialist]}
   """
   @spec in_list(list(any())) :: {:in_list, list(any())}
-  def in_list(items) when is_list(items), do: {:in_list, Enum.uniq(items)}
+  def in_list(options) when is_list(options), do: {:in_list, Enum.uniq(options)}
 
   @doc """
+  A wrapper around the `{:gt, field}` rule.
+
   iex> Request.Validator.Helper.gt(:age)
   {:gt, :age}
   iex> Request.Validator.Helper.gt(:year)
@@ -22,6 +26,8 @@ defmodule Request.Validator.Helper do
   def gt(field), do: {:gt, field}
 
   @doc """
+  A wrapper around the `{:lt, field}` rule.
+
   iex> Request.Validator.Helper.lt(:age)
   {:lt, :age}
   iex> Request.Validator.Helper.lt(:year)
@@ -31,24 +37,30 @@ defmodule Request.Validator.Helper do
   def lt(field), do: {:lt, field}
 
   @doc """
+  A wrapper around the `{:max, value}` rule.
+
   iex> Request.Validator.Helper.max(30)
   {:max, 30}
   iex> Request.Validator.Helper.max(40)
   {:max, 40}
   """
   @spec max(number()) :: {:max, number()}
-  def max(boundary) when is_number(boundary), do: {:max, boundary}
+  def max(value) when is_number(value), do: {:max, value}
 
   @doc """
+  A wrapper around the `{:min, value}` rule.
+
   iex> Request.Validator.Helper.min(30)
   {:min, 30}
   iex> Request.Validator.Helper.min(40)
   {:min, 40}
   """
   @spec min(number()) :: {:min, number()}
-  def min(boundary), do: {:min, boundary}
+  def min(value), do: {:min, value}
 
   @doc """
+  A wrapper around the `required` rule.
+
   iex> Request.Validator.Helper.required(:string)
   ~w[required string]a
   iex> Request.Validator.Helper.required([:string, :email, {:max, 100}])
@@ -61,15 +73,19 @@ defmodule Request.Validator.Helper do
   def required(rules) when is_list(rules), do: [:required] ++ rules
 
   @doc """
+  A wrapper around the `{:size, value}` rule.
+
   iex> Request.Validator.Helper.size(30)
   {:size, 30}
   iex> Request.Validator.Helper.size(40)
   {:size, 40}
   """
   @spec size(number()) :: {:size, number()}
-  def size(boundary), do: {:size, boundary}
+  def size(value), do: {:size, value}
 
   @doc """
+  Makes a nested map input validation nullable.
+
   iex> alias Request.Validator.{Helper, Rules}
   [Request.Validator.Helper, Request.Validator.Rules]
   iex> Helper.nullable(Rules.map(name: ~w[required string]a))
@@ -80,9 +96,20 @@ defmodule Request.Validator.Helper do
   def nullable(%Map_{} = map), do: struct!(map, %{nullable: true})
 
   @doc """
+  A wrapper around the `{:unique, callback}` rule.
+
   iex> alias Request.Validator.Helper
   Request.Validator.Helper
   iex> {:unique, _} = Helper.unique(&(&1 == 10))
   """
   def unique(callback), do: {:unique, callback}
+
+  @doc """
+  A wrapper around the `{:exists, callback}` rule.
+
+  iex> alias Request.Validator.Helper
+  Request.Validator.Helper
+  iex> {:exists, _} = Helper.exists(&(&1 == 10))
+  """
+  def exists(callback), do: {:exists, callback}
 end
