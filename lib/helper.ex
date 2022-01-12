@@ -112,4 +112,13 @@ defmodule Request.Validator.Helper do
   iex> {:exists, _} = Helper.exists(&(&1 == 10))
   """
   def exists(callback), do: {:exists, callback}
+
+  @doc """
+  A wrapper around the `{:phone_number, region}` rule.
+
+  iex> alias Request.Validator.Helper
+  Request.Validator.Helper
+  iex> {:phone_number, _} = Helper.phone_number(&(&1 == 10))
+  """
+  def phone_number(region), do: {:phone_number, region}
 end

@@ -11,6 +11,7 @@ defmodule RequestValidatorTest.RegisterRequest do
       age: required([:numeric, min(2), max(32)]),
       year: [:required, :numeric, min(1990), max(2000)],
       mother_age: [:required, :numeric, gt(:age)],
+      phone_number: ~w[required phone_number]a,
       address:
         map(
           line1: required(:string),

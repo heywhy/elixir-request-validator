@@ -55,6 +55,7 @@ defmodule RequestValidatorTest do
       year: 1995,
       mother_age: 32,
       gender: "male",
+      phone_number: "+14844493827",
       address: %{
         line1: "anywhere on earth",
         country: "NGA"

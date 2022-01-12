@@ -182,5 +182,19 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.list([])
       assert {:error, "This field must be a list."} = Rules.list("valid$_charac123-29@")
     end
+
+    test "phone_number/2" do
+      assert :ok = Rules.phone_number("+2347081464567", [])
+
+      assert {:error, "This field must be a valid phone number in E164 format."} =
+               Rules.phone_number("0777910290", [])
+    end
+
+    test "phone_number/3" do
+      assert :ok = Rules.phone_number("07081464567", "NG", [])
+
+      assert {:error, "This field must be a valid phone number in the region USA."} =
+               Rules.phone_number("0777910290", "USA", [])
+    end
   end
 end

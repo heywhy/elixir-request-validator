@@ -59,6 +59,8 @@ defmodule Request.Validator.Mixfile do
       {:jason, "~> 1.2"},
       {:ecto, "~> 3.5"},
       {:email_checker, "~> 0.1"},
+      {:ex_phone_number,
+       git: "https://github.com/ukchukx/ex_phone_number.git", branch: "develop"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false}
     ]
   end

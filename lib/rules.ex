@@ -274,6 +274,29 @@ defmodule Request.Validator.Rules do
         validate(is_list(value), "This field must be a list.")
       end
 
+      def phone_number(value, opts) do
+        phone_number(value, nil, opts)
+      end
+
+      def phone_number(value, region, opts) do
+        msg =
+          case region do
+            nil ->
+              "This field must be a valid phone number in E164 format."
+
+            value when is_binary(value) ->
+              "This field must be a valid phone number in the region #{value}."
+          end
+
+        case ExPhoneNumber.parse(value, region) do
+          {:ok, phone} ->
+            validate(ExPhoneNumber.is_valid_number?(phone), msg)
+
+          {:error, _} ->
+            {:error, msg}
+        end
+      end
+
       def run_rule(rule, value, opts), do: run_rule(rule, value, nil, opts)
 
       def run_rule(rule, value, params, opts) do
