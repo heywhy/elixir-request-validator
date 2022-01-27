@@ -40,18 +40,19 @@ defmodule Request.Validator.Plug do
   def call(conn, opts) do
     with action <- Map.get(conn.private, :phoenix_action),
          module <- get_validator(opts, action),
+         false <- is_nil(module),
          {:authorized, true} <- {:authorized, module.authorize(conn)},
          :ok <- module.validate(Conn.fetch_query_params(conn)) do
       conn
     else
-      nil ->
-        conn
-
       {:authorized, false} ->
         unauthorized(conn)
 
       {:error, errors} when is_map(errors) ->
         opts[:on_error].(conn, errors)
+
+      _ ->
+        conn
     end
   end
 
