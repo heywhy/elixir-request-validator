@@ -19,8 +19,8 @@ defmodule Request.Validator do
   """
   @callback authorize(Plug.Conn.t()) :: boolean()
 
-  @spec validate(Plug.Conn.t(), module()) :: validation_result()
-  def validate(conn, module) do
+  @spec validate(module(), map() | keyword(), Plug.Conn.t() | nil) :: validation_result()
+  def validate(module, params, conn \\ nil) do
     rules =
       cond do
         function_exported?(module, :rules, 1) ->
@@ -30,7 +30,7 @@ defmodule Request.Validator do
           module.rules()
       end
 
-    errors = collect_errors(conn.params, rules)
+    errors = collect_errors(params, rules)
 
     case Enum.empty?(errors) do
       true ->
@@ -49,9 +49,13 @@ defmodule Request.Validator do
       @before_compile Request.Validator
       @behaviour Request.Validator
 
-      @spec validate(Plug.Conn.t()) :: Request.Validator.validation_result()
-      def validate(conn) do
-        Request.Validator.validate(conn, __MODULE__)
+      @spec validate(Plug.Conn.t() | map()) :: Request.Validator.validation_result()
+      def validate(%Plug.Conn{} = conn) do
+        Request.Validator.validate(__MODULE__, conn.params, conn)
+      end
+
+      def validate(params) when is_map(params) do
+        Request.Validator.validate(__MODULE__, params)
       end
     end
   end
