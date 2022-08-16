@@ -19,18 +19,18 @@ defmodule Request.Validator do
   """
   @callback authorize(Plug.Conn.t()) :: boolean()
 
-  @spec validate(module(), map() | keyword(), Plug.Conn.t() | nil) :: validation_result()
-  def validate(module, params, conn \\ nil) do
+  @spec validate(module(), map() | keyword(), keyword()) :: validation_result()
+  def validate(module, params, opts \\ []) do
     rules =
       cond do
         function_exported?(module, :rules, 1) ->
-          module.rules(conn)
+          module.rules(opts[:conn])
 
         function_exported?(module, :rules, 0) ->
           module.rules()
       end
 
-    errors = collect_errors(params, rules)
+    errors = collect_errors(params, rules, opts)
 
     case Enum.empty?(errors) do
       true ->
@@ -41,8 +41,8 @@ defmodule Request.Validator do
     end
   end
 
-  defmacro __using__(_) do
-    quote do
+  defmacro __using__(opts) do
+    quote bind_quoted: [opts: opts] do
       import Request.Validator.Rules
       import Request.Validator.Helper
 
@@ -51,12 +51,13 @@ defmodule Request.Validator do
 
       @spec validate(Plug.Conn.t() | map()) :: Request.Validator.validation_result()
       def validate(%Plug.Conn{} = conn) do
-        Request.Validator.validate(__MODULE__, conn.params, conn)
+        Request.Validator.validate(__MODULE__, conn.params, unquote(opts) ++ [conn: conn])
       end
 
       def validate(params) when is_map(params) do
-        Request.Validator.validate(__MODULE__, params)
+        Request.Validator.validate(__MODULE__, params, unquote(opts))
       end
+
     end
   end
 
@@ -70,7 +71,7 @@ defmodule Request.Validator do
     end
   end
 
-  defp collect_errors(_, %Ecto.Changeset{} = changeset) do
+  defp collect_errors(_, %Ecto.Changeset{} = changeset, _opts) do
     Changeset.traverse_errors(changeset, fn {key, errors} ->
       Enum.reduce(errors, key, fn {key, value}, acc ->
         String.replace(acc, "%{#{key}}", to_string(value))
@@ -78,18 +79,18 @@ defmodule Request.Validator do
     end)
   end
 
-  defp collect_errors(params, validations) do
-    Enum.reduce(validations, %{}, errors_collector(params))
+  defp collect_errors(params, validations, opts) do
+    Enum.reduce(validations, %{}, errors_collector(params, opts))
   end
 
-  defp errors_collector(params) do
+  defp errors_collector(params, opts) do
     fn
       {field, %Rules.Bail{rules: rules}}, acc ->
         value = Map.get(params, to_string(field))
 
         result =
           Enum.find_value(rules, nil, fn callback ->
-            case run_rule(callback, value, field, params, acc) do
+            case run_rule(callback, value, field, params, acc, opts) do
               :ok ->
                 nil
 
@@ -107,7 +108,7 @@ defmodule Request.Validator do
         value = Map.get(params, to_string(field))
 
         with true <- is_list(value),
-             result <- Enum.map(value, &collect_errors(&1, rules)) do
+             result <- Enum.map(value, &collect_errors(&1, rules, opts)) do
           # result <- Enum.reject(result, &Enum.empty?/1) do
           result =
             result
@@ -140,7 +141,7 @@ defmodule Request.Validator do
         value = Map.get(params, to_string(field))
 
         with %{} <- value,
-             result <- collect_errors(value, rules),
+             result <- collect_errors(value, rules, opts),
              {true, _} <- {Enum.empty?(result), result} do
           acc
         else
@@ -165,16 +166,16 @@ defmodule Request.Validator do
       {field, vf}, acc ->
         value = Map.get(params, to_string(field))
 
-        case run_rules(vf, value, field, params, acc) do
+        case run_rules(vf, value, field, params, acc, opts) do
           {:error, errors} -> Map.put(acc, field, errors)
           _ -> acc
         end
     end
   end
 
-  defp run_rule(callback, value, field, fields, errors) do
+  defp run_rule(callback, value, field, fields, errors, opts) do
+    module = rules_module(opts)
     opts = [field: field, fields: fields, errors: errors]
-    module = rules_module()
 
     {callback, args} =
       case callback do
@@ -191,15 +192,18 @@ defmodule Request.Validator do
     end
   end
 
-  defp run_rules(rules, value, field, fields, errors) do
+  defp run_rules(rules, value, field, fields, errors, opts) do
     results =
       Enum.map(rules, fn callback ->
-        run_rule(callback, value, field, fields, errors)
+        run_rule(callback, value, field, fields, errors, opts)
       end)
       |> Enum.filter(&is_binary/1)
 
     if Enum.empty?(results), do: nil, else: {:error, results}
   end
 
-  defp rules_module, do: Application.get_env(:request_validator, :rules_module, DefaultRules)
+  defp rules_module(opts) do
+    from_config = Application.get_env(:request_validator, :rules_module, DefaultRules)
+    Keyword.get(opts, :rules_module, from_config)
+  end
 end
