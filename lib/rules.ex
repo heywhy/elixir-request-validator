@@ -19,8 +19,8 @@ defmodule Request.Validator.Rules do
   @spec bail(list(atom() | tuple())) :: Request.Validator.Rules.Bail.t()
   def bail(rules), do: %__MODULE__.Bail{rules: rules}
 
-  @spec map(maybe_improper_list()) :: Request.Validator.Rules.Map_.t()
-  def map(attrs), do: %__MODULE__.Map_{attrs: attrs}
+  @spec map(maybe_improper_list(), boolean()) :: Request.Validator.Rules.Map_.t()
+  def map(attrs, nullable \\ false), do: %__MODULE__.Map_{attrs: attrs, nullable: nullable}
 
   @spec array(maybe_improper_list) :: Request.Validator.Rules.Array.t()
   def array(attrs) when is_list(attrs), do: %__MODULE__.Array{attrs: attrs}
