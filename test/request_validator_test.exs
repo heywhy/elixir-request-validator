@@ -4,8 +4,8 @@ defmodule RequestValidatorTest do
 
   alias Plug.Conn
   alias Request.Validator.Plug, as: ValidationPlug
-  alias RequestValidatorTest.RegisterRequest
   alias RequestValidatorTest.EctoRulesRequest
+  alias RequestValidatorTest.RegisterRequest
 
   doctest(Request.Validator.Helper)
 

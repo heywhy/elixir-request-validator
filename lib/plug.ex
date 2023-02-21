@@ -1,4 +1,8 @@
 defmodule Request.Validator.Plug do
+  @moduledoc """
+  Documentation for `Request.Validator.Plug`.
+  """
+
   alias Plug.Conn
   alias Request.Validator
 

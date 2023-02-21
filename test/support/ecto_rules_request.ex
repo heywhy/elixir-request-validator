@@ -1,4 +1,5 @@
 defmodule RequestValidatorTest.EctoRulesRequest do
+  @moduledoc false
   use Request.Validator
   use Ecto.Schema
 

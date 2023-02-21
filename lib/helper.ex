@@ -1,4 +1,7 @@
 defmodule Request.Validator.Helper do
+  @moduledoc """
+  Documentation for `Request.Validator.Helper`.
+  """
   alias Request.Validator.Rules.Map_
 
   @doc """

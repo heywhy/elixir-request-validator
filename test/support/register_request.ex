@@ -1,4 +1,5 @@
 defmodule RequestValidatorTest.RegisterRequest do
+  @moduledoc false
   use Request.Validator
 
   @impl Request.Validator

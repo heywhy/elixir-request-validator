@@ -1,10 +1,15 @@
 defmodule Request.Validator.Rules do
+  @moduledoc """
+  Documentation for `Request.Validator.Rules`.
+  """
   defmodule Bail do
+    @moduledoc false
     defstruct rules: []
 
     @type t :: %__MODULE__{rules: list(atom() | tuple())}
   end
 
+  # credo:disable-for-next-line
   defmodule Map_ do
     defstruct attrs: [], nullable: false
 
@@ -12,6 +17,7 @@ defmodule Request.Validator.Rules do
   end
 
   defmodule Array do
+    @moduledoc false
     defstruct attrs: []
     @type t :: %__MODULE__{attrs: list(atom() | tuple())}
   end
@@ -26,6 +32,7 @@ defmodule Request.Validator.Rules do
   def array(attrs) when is_list(attrs), do: %__MODULE__.Array{attrs: attrs}
 
   defmacro __using__(_opts) do
+    # credo:disable-for-next-line
     quote location: :keep do
       @implicit_rules ~w[required]a
 
@@ -318,10 +325,9 @@ defmodule Request.Validator.Rules do
       end
 
       defp validate(condition, msg) do
-        if !condition do
-          {:error, msg}
-        else
-          :ok
+        case condition do
+          true -> :ok
+          false -> {:error, msg}
         end
       end
     end

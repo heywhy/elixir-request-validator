@@ -1,4 +1,9 @@
+# credo:disable-for-this-file
 defmodule Request.Validator do
+  @moduledoc """
+  Documentation for `Request.Validator`.
+  """
+
   alias Ecto.Changeset
   alias Request.Validator.{DefaultRules, Rules, Rules.Array, Rules.Map_}
 
@@ -57,7 +62,6 @@ defmodule Request.Validator do
       def validate(params) when is_map(params) do
         Request.Validator.validate(__MODULE__, params, unquote(opts))
       end
-
     end
   end
 
