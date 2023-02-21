@@ -73,7 +73,7 @@ defmodule Request.Validator.Mixfile do
       {:git_hooks, "~> 0.7", only: :dev, runtime: false},
       {:git_ops, "~> 2.5", only: :dev},
       {:jason, "~> 1.4", optional: true},
-      {:plug, "~> 1.14", optional: true}
+      {:plug, "~> 1.14", only: :test, optional: true}
     ]
   end
 

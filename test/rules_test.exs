@@ -149,9 +149,7 @@ defmodule RequestValidator.RulesTest do
     end
 
     test "file/2" do
-      file = Plug.Upload.random_file!("request_validator_test")
-
-      assert :ok = Rules.file(%Plug.Upload{path: file, filename: "test.png"})
+      assert :ok = Rules.file(%Plug.Upload{path: "path", filename: "test.png"})
       assert {:error, "This field must be a file."} = Rules.file(nil)
     end
 
