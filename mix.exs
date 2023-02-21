@@ -48,7 +48,7 @@ defmodule Request.Validator.Mixfile do
       # Dialyzer
       dialyzer: [
         plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
-        plt_add_apps: []
+        plt_add_apps: [:plug]
       ]
     ]
   end
@@ -72,7 +72,7 @@ defmodule Request.Validator.Mixfile do
       {:git_hooks, "~> 0.7", only: :dev, runtime: false},
       {:git_ops, "~> 2.5", only: :dev},
       {:jason, "~> 1.4", optional: true},
-      {:plug, "~> 1.14", only: :test, optional: true}
+      {:plug, "~> 1.14", optional: true}
     ]
   end
 

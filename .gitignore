@@ -22,3 +22,8 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 request_validator-*.tar
 
+# Generated files for Dialyxir
+/priv/plts/*.plt
+/priv/plts/*.plt.hash
+
+.elixir_ls/
