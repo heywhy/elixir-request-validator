@@ -4,7 +4,6 @@ defmodule Request.Validator do
   Documentation for `Request.Validator`.
   """
 
-  alias Ecto.Changeset
   alias Request.Validator.{DefaultRules, Rules, Rules.Array, Rules.Map_}
 
   @type validation_result :: :ok | {:error, map()}
@@ -73,14 +72,6 @@ defmodule Request.Validator do
         def authorize(_), do: true
       end
     end
-  end
-
-  defp collect_errors(_, %Ecto.Changeset{} = changeset, _opts) do
-    Changeset.traverse_errors(changeset, fn {key, errors} ->
-      Enum.reduce(errors, key, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
   end
 
   defp collect_errors(params, validations, opts) do

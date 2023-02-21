@@ -4,15 +4,11 @@ defmodule RequestValidatorTest do
 
   alias Plug.Conn
   alias Request.Validator.Plug, as: ValidationPlug
-  alias RequestValidatorTest.EctoRulesRequest
   alias RequestValidatorTest.RegisterRequest
 
   doctest(Request.Validator.Helper)
 
-  @opts ValidationPlug.init(
-          register: RegisterRequest,
-          ecto_rules: EctoRulesRequest
-        )
+  @opts ValidationPlug.init(register: RegisterRequest)
 
   test "fails request validations" do
     conn =
@@ -65,38 +61,6 @@ defmodule RequestValidatorTest do
     conn =
       conn(:post, "/api/hello", params)
       |> Conn.put_private(:phoenix_action, :register)
-      |> ValidationPlug.call(@opts)
-
-    assert conn.state == :unset
-    assert conn.resp_body == nil
-    assert conn.status == nil
-  end
-
-  test "fail ecto validation support" do
-    conn =
-      conn(:post, "/api/hello", %{})
-      |> Conn.put_req_header("content-type", "application/json")
-      |> Conn.put_private(:phoenix_action, :ecto_rules)
-      |> ValidationPlug.call(@opts)
-
-    assert conn.state == :sent
-    assert conn.status == 422
-    assert conn.resp_body =~ "email"
-    assert conn.resp_body =~ "can't be blank"
-  end
-
-  test "pass ecto validation support" do
-    params = %{
-      email: "test@gmail.com",
-      password: "password",
-      name: "john doe",
-      age: 31
-    }
-
-    conn =
-      conn(:post, "/api/hello", params)
-      |> Conn.put_req_header("content-type", "application/json")
-      |> Conn.put_private(:phoenix_action, :ecto_rules)
       |> ValidationPlug.call(@opts)
 
     assert conn.state == :unset
