@@ -30,7 +30,7 @@ defmodule Request.Validator do
           module.rules()
       end
 
-    errors = collect_errors(params, rules, opts)
+    errors = collect_errors(params, rules, set_strict_default(opts))
 
     case Enum.empty?(errors) do
       true ->
@@ -80,7 +80,10 @@ defmodule Request.Validator do
   end
 
   defp collect_errors(params, validations, opts) do
-    Enum.reduce(validations, %{}, errors_collector(params, opts))
+    case undeclared_fields(params, validations, opts) do
+      [] -> Enum.reduce(validations, %{}, errors_collector(params, opts))
+      fields -> fields |> Enum.map(&{&1, ["This field is unknown"]}) |> Map.new()
+    end
   end
 
   defp errors_collector(params, opts) do
@@ -205,5 +208,28 @@ defmodule Request.Validator do
   defp rules_module(opts) do
     from_config = Application.get_env(:request_validator, :rules_module, DefaultRules)
     Keyword.get(opts, :rules_module, from_config)
+  end
+
+  defp set_strict_default(opts) do
+    Keyword.put_new(opts, :strict, Application.get_env(:request_validator, :strict, false))
+  end
+
+  defp undeclared_fields(params, rules, opts) do
+    opts
+    |> Keyword.get(:strict, false)
+    |> case do
+      false ->
+        []
+
+      true ->
+        rule_fields = rules |> Keyword.keys() |> Enum.map(&to_string/1) |> MapSet.new()
+
+        params
+        |> Map.keys()
+        |> MapSet.new()
+        |> MapSet.difference(rule_fields)
+        |> MapSet.to_list()
+        |> Enum.map(&String.to_atom/1)
+    end
   end
 end
