@@ -55,6 +55,16 @@ defmodule Request.Validator.Rules do
         validate(result, "This field is required.")
       end
 
+      def required_if(value, callback, opts) do
+        case callback.(opts) do
+          false ->
+            :ok
+
+          true ->
+            required(value, opts)
+        end
+      end
+
       def string(value, opts \\ [])
 
       def string(value, _) do
