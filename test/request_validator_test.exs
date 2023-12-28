@@ -5,12 +5,14 @@ defmodule RequestValidatorTest do
   alias Plug.Conn
   alias Request.Validator.Plug, as: ValidationPlug
   alias RequestValidatorTest.RegisterRequest
+  alias RequestValidatorTest.StrictRequest
   alias RequestValidatorTest.EctoRulesRequest
 
   doctest(Request.Validator.Helper)
 
   @opts ValidationPlug.init(
           register: RegisterRequest,
+          strict: StrictRequest,
           ecto_rules: EctoRulesRequest
         )
 
@@ -70,6 +72,19 @@ defmodule RequestValidatorTest do
     assert conn.state == :unset
     assert conn.resp_body == nil
     assert conn.status == nil
+  end
+
+  test "fails request validation when undeclared fields are passed to a strict request" do
+    conn =
+      :post
+      |> conn("/api/hello", %{email: 123, random_field: "Lorem"})
+      |> Conn.put_private(:phoenix_action, :strict)
+      |> ValidationPlug.call(@opts)
+
+    assert conn.state == :sent
+    assert conn.resp_body =~ "This field is unknown"
+    assert conn.resp_body =~ "random_field"
+    assert conn.status == 422
   end
 
   test "fail ecto validation support" do

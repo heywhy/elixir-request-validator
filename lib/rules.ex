@@ -310,9 +310,9 @@ defmodule Request.Validator.Rules do
       defp same_type(value1, value2) when is_list(value1) and is_list(value2), do: true
       defp same_type(_value1, _value2), do: false
 
-      defp should_validate(rule, value, field: field, fields: fields, errors: errors) do
-        is_present_or_implicit_rules?(rule, field, fields) &&
-          has_not_failed_presence_rule?(rule, field, errors)
+      defp should_validate(rule, value, opts) do
+        is_present_or_implicit_rules?(rule, opts[:field], opts[:fields]) &&
+          has_not_failed_presence_rule?(rule, opts[:field], opts[:errors])
       end
 
       def is_present_or_implicit_rules?(rule, field, fields) do
