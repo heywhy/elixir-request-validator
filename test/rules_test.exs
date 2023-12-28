@@ -182,5 +182,24 @@ defmodule RequestValidator.RulesTest do
       assert :ok = Rules.list([])
       assert {:error, "This field must be a list."} = Rules.list("valid$_charac123-29@")
     end
+
+    test "required_if/3" do
+      opts = %{
+        a: 1,
+        b: 3,
+        c: 5
+      }
+
+      # when a valid value is provided for the field
+      assert :ok = Rules.required_if(23, fn %{c: c} -> is_nil(c) end, opts)
+
+      assert :ok = Rules.required_if(23, fn opts -> is_nil(Map.get(opts, :val)) end, opts)
+
+      #  No valid value provided for the field
+      assert :ok = Rules.required_if(nil, fn %{c: c} -> is_nil(c) end, opts)
+
+      assert {:error, "This field is required."} =
+               Rules.required_if(nil, fn opts -> is_nil(Map.get(opts, :val)) end, opts)
+    end
   end
 end
