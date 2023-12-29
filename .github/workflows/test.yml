@@ -1,0 +1,39 @@
+name: Test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        id: beam
+        with:
+          otp-version: "24"
+          elixir-version: "1.12"
+
+      - name: Restore Cached Dependencies
+        uses: actions/cache@v3
+        id: mix-cache
+        with:
+          path: deps
+          key: ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-${{ hashFiles('mix.lock') }}
+
+      - name: Install Dependencies
+        if: steps.mix-cache.outputs.cache-hit != 'true'
+        run: mix deps.get
+
+      - name: Check Codebase Standard
+        run: |
+          mix format --check-formatted
+          mix credo
+
+      - name: Run Tests
+        run: mix coveralls.json
+      
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v2
+        with:
+          directory: ./cover
+          fail_ci_if_error: true
