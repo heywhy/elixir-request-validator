@@ -1,46 +1,43 @@
 defmodule Request.Validator.Mixfile do
   use Mix.Project
 
-  @source_url "https://github.com/heywhy/elixir-request-validator"
+  @version "0.8.1"
+  @scm_url "https://github.com/heywhy/elixir-request-validator"
 
   def project do
     [
       app: :request_validator,
-      version: "0.8.1",
+      version: @version,
       elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       compilers: Mix.compilers(),
-      description: description(),
-      package: package(),
+      package: [
+        files: ["lib", "mix.exs", "CHANGELOG.md", "README.md"],
+        maintainers: ["Atanda Rasheed"],
+        licenses: ["MIT License"],
+        links: %{
+          "GitHub" => @scm_url,
+          "Docs" => "https://hexdocs.pm/request_validator/"
+        }
+      ],
+      description: """
+      A blazing fast request validator for your phoenix app.
+      """,
+
+      # Dialyzer
+      dialyzer: [plt_add_deps: :apps_direct],
 
       # Docs
       name: "RequestValidator",
-      source_url: @source_url,
-      homepage_url: "https://hexdocs.pm/request_validator/",
+      source_url: @scm_url,
+      homepage_url: "https://hexdocs.pm/request_validator",
       docs: [
         main: "readme",
         extras: ["README.md", "LICENSE"]
       ]
-    ]
-  end
-
-  defp description do
-    """
-    A blazing fast request validator for your phoenix app.
-    """
-  end
-
-  defp package do
-    [
-      files: ["lib", "mix.exs", "README.md"],
-      maintainers: ["Atanda Rasheed"],
-      licenses: ["MIT License"],
-      links: %{
-        "GitHub" => @source_url,
-        "Docs" => "https://hexdocs.pm/request_validator/"
-      }
     ]
   end
 
@@ -55,11 +52,22 @@ defmodule Request.Validator.Mixfile do
 
   defp deps do
     [
-      {:plug, "~> 1.10"},
-      {:jason, "~> 1.2"},
+      {:credo, "~> 1.5", only: :dev, runtime: false},
+      {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ecto, "~> 3.5"},
       {:email_checker, "~> 0.1"},
-      {:ex_doc, "~> 0.22", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
+      {:git_hooks, "~> 0.7", only: :dev, runtime: false},
+      {:git_ops, "~> 2.5", only: :dev},
+      {:plug, "~> 1.10"},
+      {:jason, "~> 1.2"}
+    ]
+  end
+
+  defp aliases do
+    [
+      "ops.release": ["cmd mix test --color", "git_ops.release"],
+      setup: ["deps.get", "git_hooks.install"]
     ]
   end
 end

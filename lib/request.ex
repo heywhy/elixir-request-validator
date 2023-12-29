@@ -1,13 +1,14 @@
+# credo:disable-for-this-file
 defmodule Request.Validator do
   alias Ecto.Changeset
-  alias Request.Validator.{DefaultRules, Rules, Rules.Array, Rules.Map_}
+  alias Request.Validator.{DefaultRules, Rules}
 
   @type validation_result :: :ok | {:error, map()}
 
   @doc ~S"""
   Get the validation rules that apply to the request.
   """
-  @callback rules(Plug.Conn.t()) :: keyword()
+  @callback rules(Plug.Conn.t()) :: keyword() | Changeset.t()
 
   @doc ~S"""
   Determine if the user is authorized to make this request.
@@ -57,7 +58,6 @@ defmodule Request.Validator do
       def validate(params) when is_map(params) do
         Request.Validator.validate(__MODULE__, params, unquote(opts))
       end
-
     end
   end
 
@@ -107,7 +107,7 @@ defmodule Request.Validator do
           _ -> acc
         end
 
-      {field, %Array{attrs: rules}}, acc ->
+      {field, %Rules.Array{attrs: rules}}, acc ->
         value = Map.get(params, to_string(field))
 
         with true <- is_list(value),
@@ -140,7 +140,7 @@ defmodule Request.Validator do
             Map.put(acc, field, ["This field is expected to be an array."])
         end
 
-      {field, %Map_{attrs: rules, nullable: nullable}}, acc ->
+      {field, %Rules.Object{attrs: rules, nullable: nullable}}, acc ->
         value = Map.get(params, to_string(field))
 
         with %{} <- value,
@@ -157,12 +157,10 @@ defmodule Request.Validator do
             Map.merge(acc, result)
 
           val ->
-            cond do
-              nullable && is_nil(val) ->
-                acc
-
-              true ->
-                Map.put(acc, field, ["This field is expected to be a map."])
+            if nullable and is_nil(val) do
+              acc
+            else
+              Map.put(acc, field, ["This field is expected to be a map."])
             end
         end
 

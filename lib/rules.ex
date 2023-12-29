@@ -5,10 +5,10 @@ defmodule Request.Validator.Rules do
     @type t :: %__MODULE__{rules: list(atom() | tuple())}
   end
 
-  defmodule Map_ do
+  defmodule Object do
     defstruct attrs: [], nullable: false
 
-    @type t :: %__MODULE__{attrs: maybe_improper_list()}
+    @type t :: %__MODULE__{attrs: list()}
   end
 
   defmodule Array do
@@ -19,13 +19,14 @@ defmodule Request.Validator.Rules do
   @spec bail(list(atom() | tuple())) :: Request.Validator.Rules.Bail.t()
   def bail(rules), do: %__MODULE__.Bail{rules: rules}
 
-  @spec map(maybe_improper_list()) :: Request.Validator.Rules.Map_.t()
-  def map(attrs), do: %__MODULE__.Map_{attrs: attrs}
+  @spec map(list()) :: Object.t()
+  def map(attrs), do: %__MODULE__.Object{attrs: attrs}
 
-  @spec array(maybe_improper_list) :: Request.Validator.Rules.Array.t()
+  @spec array(list()) :: Request.Validator.Rules.Array.t()
   def array(attrs) when is_list(attrs), do: %__MODULE__.Array{attrs: attrs}
 
   defmacro __using__(_opts) do
+    # credo:disable-for-next-line
     quote location: :keep do
       @implicit_rules ~w[required]a
 
@@ -311,11 +312,11 @@ defmodule Request.Validator.Rules do
       defp same_type(_value1, _value2), do: false
 
       defp should_validate(rule, value, opts) do
-        is_present_or_implicit_rules?(rule, opts[:field], opts[:fields]) &&
+        present_or_implicit_rules?(rule, opts[:field], opts[:fields]) &&
           has_not_failed_presence_rule?(rule, opts[:field], opts[:errors])
       end
 
-      def is_present_or_implicit_rules?(rule, field, fields) do
+      def present_or_implicit_rules?(rule, field, fields) do
         Map.has_key?(fields, to_string(field)) || rule in @implicit_rules
       end
 
@@ -328,10 +329,9 @@ defmodule Request.Validator.Rules do
       end
 
       defp validate(condition, msg) do
-        if !condition do
-          {:error, msg}
-        else
-          :ok
+        case condition do
+          true -> :ok
+          false -> {:error, msg}
         end
       end
     end
