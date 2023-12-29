@@ -33,7 +33,7 @@ jobs:
         run: mix coveralls.json
       
       - name: Upload Coverage Reports
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           directory: ./cover
           fail_ci_if_error: true
