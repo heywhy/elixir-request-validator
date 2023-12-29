@@ -17,7 +17,7 @@ defmodule Request.Validator.Mixfile do
       package: [
         files: ["lib", "mix.exs", "CHANGELOG.md", "README.md"],
         maintainers: ["Atanda Rasheed"],
-        licenses: ["MIT License"],
+        licenses: ["MIT"],
         links: %{
           "GitHub" => @scm_url,
           "Docs" => "https://hexdocs.pm/request_validator/"
