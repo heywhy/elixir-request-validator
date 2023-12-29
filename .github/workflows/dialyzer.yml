@@ -28,7 +28,9 @@ jobs:
             ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
           restore-keys: |
             ${{ runner.os }}-${{ steps.beam.outputs.elixir-version }}-${{ steps.beam.outputs.otp-version }}-plt
-          path: priv/plts
+          path: |
+            _build/dev/*.plt
+            _build/dev/*.plt.hash
 
       - name: Install Dependencies
         if: steps.mix-cache.outputs.cache-hit != 'true'
