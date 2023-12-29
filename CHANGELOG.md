@@ -5,6 +5,11 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.2](https://github.com/heywhy/elixir-request-validator/compare/v0.8.1...v0.8.2) (2023-12-29)
+
+
+
+
 ## [v0.8.1](https://github.com/heywhy/elixir-request-validator/compare/v0.8.1...v0.8.1) (2023-12-28)
 
 
