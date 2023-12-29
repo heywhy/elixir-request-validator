@@ -62,6 +62,7 @@ defmodule Request.Validator.Mixfile do
 
   defp deps do
     [
+      {:castore, "~> 1.0", only: :test},
       {:credo, "~> 1.5", only: :dev, runtime: false},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
       {:ecto, "~> 3.5"},
