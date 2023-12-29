@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.3](https://github.com/heywhy/elixir-request-validator/compare/v0.8.2...v0.8.3) (2023-12-29)
+
+
+
+
+### Bug Fixes:
+
+* update library license
+
 ## [v0.8.2](https://github.com/heywhy/elixir-request-validator/compare/v0.8.1...v0.8.2) (2023-12-29)
 
 
