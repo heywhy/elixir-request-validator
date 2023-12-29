@@ -27,6 +27,16 @@ defmodule Request.Validator.Mixfile do
       A blazing fast request validator for your phoenix app.
       """,
 
+      # Coverage
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.json": :test
+      ],
+
       # Dialyzer
       dialyzer: [plt_add_deps: :apps_direct],
 
@@ -57,6 +67,7 @@ defmodule Request.Validator.Mixfile do
       {:ecto, "~> 3.5"},
       {:email_checker, "~> 0.1"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.14", only: :test},
       {:git_hooks, "~> 0.7", only: :dev, runtime: false},
       {:git_ops, "~> 2.5", only: :dev},
       {:plug, "~> 1.10"},
