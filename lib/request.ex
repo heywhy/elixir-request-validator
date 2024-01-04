@@ -52,7 +52,8 @@ defmodule Request.Validator do
 
       @spec validate(Plug.Conn.t() | map()) :: Request.Validator.validation_result()
       def validate(%Plug.Conn{} = conn) do
-        Request.Validator.validate(__MODULE__, conn.params, unquote(opts) ++ [conn: conn])
+        params = conn.query_params |> Map.merge(conn.body_params) |> Map.merge(conn.path_params)
+        Request.Validator.validate(__MODULE__, params, unquote(opts) ++ [conn: conn])
       end
 
       def validate(params) when is_map(params) do
