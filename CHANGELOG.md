@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v0.8.5](https://github.com/heywhy/elixir-request-validator/compare/v0.8.4...v0.8.5) (2024-09-25)
+
+
+
+
+### Bug Fixes:
+
+* handle number in required
+
 ## [v0.8.4](https://github.com/heywhy/elixir-request-validator/compare/v0.8.3...v0.8.4) (2024-01-04)
 
 

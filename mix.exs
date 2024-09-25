@@ -1,7 +1,7 @@
 defmodule Request.Validator.Mixfile do
   use Mix.Project
 
-  @version "0.8.4"
+  @version "0.8.5"
   @scm_url "https://github.com/heywhy/elixir-request-validator"
 
   def project do
