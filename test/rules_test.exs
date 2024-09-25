@@ -14,6 +14,7 @@ defmodule RequestValidator.RulesTest do
     end
 
     test "required/2" do
+      assert :ok = Rules.required(0)
       assert :ok = Rules.required([1])
       assert :ok = Rules.required(%{a: 1})
       assert :ok = Rules.required(1212)

@@ -41,16 +41,13 @@ defmodule Request.Validator.Rules do
 
       def required(value, opts \\ [])
 
-      def required(value, _) when is_boolean(value), do: :ok
+      def required(value, _) when is_boolean(value) or is_number(value), do: :ok
 
       def required(value, _) do
         result =
           case value_size(value) do
-            nil ->
-              false
-
-            length ->
-              length > 0
+            nil -> false
+            length -> length > 0
           end
 
         validate(result, "This field is required.")
