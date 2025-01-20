@@ -1,5 +1,54 @@
 defmodule Request.Validator.Helper do
   alias Request.Validator.Rules
+  alias Request.Validator.Utils
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Helper
+  iex> import Request.Validator.Rulex
+  iex> rules = ~V[required|email:format]
+  iex> match?([%{name: :required}, %{name: :email}], rules)
+  true
+  """
+  defmacro sigil_V({:<<>>, _, [rules]}, []) do
+    list =
+      rules
+      |> String.split("|")
+      |> Enum.reverse()
+      |> Enum.map(fn rule ->
+        {rule, args} =
+          case String.split(rule, ":", parts: 2) do
+            [rule] -> {rule, nil}
+            parts -> List.to_tuple(parts)
+          end
+
+        args =
+          case args do
+            nil -> nil
+            args when is_binary(args) -> args |> String.split(",")
+          end
+
+        {Utils.to_atom(rule), args}
+      end)
+      |> Enum.reduce([], fn rule, acc ->
+        expr = rule_to_expr(rule)
+
+        Enum.concat([expr], acc)
+      end)
+
+    quote do: unquote(list)
+  end
+
+  defp rule_to_expr({rule, nil}) do
+    quote do: unquote(rule)()
+  end
+
+  defp rule_to_expr({rule, arg}) do
+    arg = Macro.escape(arg)
+
+    quote do: unquote(rule)(unquote(arg))
+  end
 
   @doc """
   A wrapper around the `{:in_list, options}` rule.
