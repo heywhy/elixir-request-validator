@@ -11,58 +11,62 @@
 msgid ""
 msgstr ""
 
-#: lib/validator/rules.ex:59
+#: lib/validator/rules.ex:52
 #, elixir-autogen, elixir-format
-msgid "The :attribute field is required."
+msgid "The %{attribute} field is required."
 msgstr ""
 
-#: lib/validator/rules.ex:377
+#: lib/validator/rules.ex:126
 #, elixir-autogen, elixir-format
-msgid "The :attribute confirmation does not match."
+msgid "The %{attribute} field is required when %{other} is %{value}."
 msgstr ""
 
-#: lib/validator/rules.ex:93
-#: lib/validator/rules.ex:119
+#: lib/validator/rules.ex:162
 #, elixir-autogen, elixir-format
-msgid "The :attribute field is required when :other is :value."
+msgid "The %{attribute} field must be a string."
 msgstr ""
 
-#: lib/validator/rules.ex:178
+#: lib/validator/rules.ex:189
 #, elixir-autogen, elixir-format
-msgid "The :attribute may only contain letters and numbers."
+msgid "The %{attribute} field must only contain letters."
 msgstr ""
 
-#: lib/validator/rules.ex:212
+#: lib/validator/rules.ex:222
 #, elixir-autogen, elixir-format
-msgid "The :attribute may only contain letters, numbers, dashes and underscores."
+msgid "The %{attribute} field must only contain letters and numbers."
 msgstr ""
 
-#: lib/validator/rules.ex:144
+#: lib/validator/rules.ex:257
 #, elixir-autogen, elixir-format
-msgid "The :attribute may only contain letters."
+msgid "The %{attribute} field must only contain letters, numbers, dashes, and underscores."
 msgstr ""
 
-#: lib/validator/rules.ex:298
+#: lib/validator/rules.ex:292
 #, elixir-autogen, elixir-format
-msgid "The :attribute must be a number."
+msgid "The %{attribute} field must be an integer."
 msgstr ""
 
-#: lib/validator/rules.ex:336
+#: lib/validator/rules.ex:323
 #, elixir-autogen, elixir-format
-msgid "The :attribute must be a valid email address."
+msgid "The %{attribute} field must be a decimal."
 msgstr ""
 
-#: lib/validator/rules.ex:271
+#: lib/validator/rules.ex:352
 #, elixir-autogen, elixir-format
-msgid "The :attribute must be an decimal."
+msgid "The %{attribute} field must be a number."
 msgstr ""
 
-#: lib/validator/rules.ex:242
+#: lib/validator/rules.ex:392
 #, elixir-autogen, elixir-format
-msgid "The :attribute must be an integer."
+msgid "The %{attribute} field must be a valid email address."
 msgstr ""
 
-#: lib/validator/rules.ex:400
+#: lib/validator/rules.ex:431
 #, elixir-autogen, elixir-format
-msgid "The selected :attribute is invalid."
+msgid "The %{attribute} field confirmation does not match."
+msgstr ""
+
+#: lib/validator/rules.ex:459
+#, elixir-autogen, elixir-format
+msgid "The selected %{attribute} is invalid."
 msgstr ""
