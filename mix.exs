@@ -70,6 +70,7 @@ defmodule Request.Validator.Mixfile do
       {:email_checker, "~> 0.1"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:excoveralls, "~> 0.14", only: :test},
+      {:gettext, "~> 0.26"},
       {:git_hooks, "~> 0.7", only: :dev, runtime: false},
       {:git_ops, "~> 2.5", only: :dev},
       {:plug, "~> 1.10"},

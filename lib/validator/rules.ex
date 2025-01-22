@@ -3,13 +3,22 @@ defmodule Request.Validator.Rulex do
   alias EmailChecker.Check.MX
   alias Request.Validator.Utils
 
+  import Gettext.Macros
+
   require Decimal
 
   @type rule :: %{
           required(:name) => atom(),
           required(:validator) => (... -> boolean()),
+          required(:message) => binary(),
           optional(:implicit?) => boolean()
         }
+
+  @backend Application.compile_env(
+             :request_validator,
+             :gettext_backend,
+             Request.Validator.Gettext
+           )
 
   @doc """
   ## Examples
@@ -46,7 +55,8 @@ defmodule Request.Validator.Rulex do
     %{
       name: :required,
       implicit?: true,
-      validator: validator_fn
+      validator: validator_fn,
+      message: gettext_with_backend(@backend, "The :attribute field is required.")
     }
   end
 
@@ -78,7 +88,9 @@ defmodule Request.Validator.Rulex do
     %{
       name: :required_if,
       implicit?: true,
-      validator: &validator_fn.(condition, &1, validator_fn)
+      validator: &validator_fn.(condition, &1, validator_fn),
+      message:
+        gettext_with_backend(@backend, "The :attribute field is required when :other is :value.")
     }
   end
 
@@ -99,7 +111,14 @@ defmodule Request.Validator.Rulex do
   false
   """
   @spec string() :: rule()
-  def string, do: %{name: :string, validator: &is_binary/1}
+  def string do
+    %{
+      name: :string,
+      validator: &is_binary/1,
+      message:
+        gettext_with_backend(@backend, "The :attribute field is required when :other is :value.")
+    }
+  end
 
   @doc """
   ## Examples
@@ -119,7 +138,11 @@ defmodule Request.Validator.Rulex do
   """
   @spec alpha() :: rule()
   def alpha do
-    %{name: :alpha, validator: &(is_binary(&1) and String.match?(&1, ~r/^[a-zA-Z]+$/))}
+    %{
+      name: :alpha,
+      validator: &(is_binary(&1) and String.match?(&1, ~r/^[a-zA-Z]+$/)),
+      message: gettext_with_backend(@backend, "The :attribute may only contain letters.")
+    }
   end
 
   @doc """
@@ -148,7 +171,12 @@ defmodule Request.Validator.Rulex do
       _value -> false
     end
 
-    %{name: :alpha_num, validator: &validator_fn.(&1)}
+    %{
+      name: :alpha_num,
+      validator: &validator_fn.(&1),
+      message:
+        gettext_with_backend(@backend, "The :attribute may only contain letters and numbers.")
+    }
   end
 
   @doc """
@@ -177,7 +205,15 @@ defmodule Request.Validator.Rulex do
       _value -> false
     end
 
-    %{name: :alpha_dash, validator: &validator_fn.(&1)}
+    %{
+      name: :alpha_dash,
+      validator: &validator_fn.(&1),
+      message:
+        gettext_with_backend(
+          @backend,
+          "The :attribute may only contain letters, numbers, dashes and underscores."
+        )
+    }
   end
 
   @doc """
@@ -199,7 +235,13 @@ defmodule Request.Validator.Rulex do
   false
   """
   @spec integer() :: rule()
-  def integer, do: %{name: :integer, validator: &is_integer/1}
+  def integer do
+    %{
+      name: :integer,
+      validator: &is_integer/1,
+      message: gettext_with_backend(@backend, "The :attribute must be an integer.")
+    }
+  end
 
   @doc """
   ## Examples
@@ -222,7 +264,13 @@ defmodule Request.Validator.Rulex do
   false
   """
   @spec decimal() :: rule()
-  def decimal, do: %{name: :decimal, validator: &(is_float(&1) or Decimal.is_decimal(&1))}
+  def decimal do
+    %{
+      name: :decimal,
+      validator: &(is_float(&1) or Decimal.is_decimal(&1)),
+      message: gettext_with_backend(@backend, "The :attribute must be an decimal.")
+    }
+  end
 
   @doc """
   ## Examples
@@ -243,7 +291,13 @@ defmodule Request.Validator.Rulex do
   false
   """
   @spec numeric() :: rule()
-  def numeric, do: %{name: :numeric, validator: &is_number/1}
+  def numeric do
+    %{
+      name: :numeric,
+      validator: &is_number/1,
+      message: gettext_with_backend(@backend, "The :attribute must be a number.")
+    }
+  end
 
   @doc """
   ## Examples
@@ -276,6 +330,74 @@ defmodule Request.Validator.Rulex do
         validations -> validations |> Enum.map(&Utils.to_atom/1) |> Enum.map(&@email_checks[&1])
       end
 
-    %{name: :email, validator: &(is_binary(&1) and EmailChecker.valid?(&1, validations))}
+    %{
+      name: :email,
+      validator: &(is_binary(&1) and EmailChecker.valid?(&1, validations)),
+      message: gettext_with_backend(@backend, "The :attribute must be a valid email address.")
+    }
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rulex
+  iex> data = %{
+  ...>   "password" => 12345678,
+  ...>   "password_confirmation" => 12345678,
+  ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
+  ...> }
+  iex> %{validator: fun} = confirmed()
+  iex> fun.("password", 12345678, data)
+  true
+  iex> fun.("list.0.a", 1, data)
+  true
+  iex> fun.("password", "yikes!", data)
+  false
+  iex> fun.("list.0.a", 10, data)
+  false
+  """
+  @spec confirmed(nil | String.t()) :: rule()
+  def confirmed(attr \\ nil) do
+    validator_fn = fn field, value, data ->
+      attr =
+        case attr do
+          nil -> field <> "_confirmation"
+          attr -> attr
+        end
+
+      # INFO: maybe not convert to path and have the data already flatten?
+      attr_path = Utils.convert_to_path(attr)
+
+      get_in(data, attr_path) == value
+    end
+
+    %{
+      name: :confirmed,
+      validator: &validator_fn.(&1, &2, &3),
+      message: gettext_with_backend(@backend, "The :attribute confirmation does not match.")
+    }
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rulex
+  iex> %{validator: fun} = allowed(["male", "female"])
+  iex> fun.("male")
+  true
+  iex> fun.("female")
+  true
+  iex> fun.("child")
+  false
+  iex> fun.("goat")
+  false
+  """
+  @spec allowed([term()]) :: rule()
+  def allowed(values) do
+    %{
+      name: :allowed,
+      validator: &Enum.member?(values, &1),
+      message: gettext_with_backend(@backend, "The selected :attribute is invalid.")
+    }
   end
 end

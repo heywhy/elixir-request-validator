@@ -1,0 +1,68 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/validator/rules.ex:59
+#, elixir-autogen, elixir-format
+msgid "The :attribute field is required."
+msgstr ""
+
+#: lib/validator/rules.ex:377
+#, elixir-autogen, elixir-format
+msgid "The :attribute confirmation does not match."
+msgstr ""
+
+#: lib/validator/rules.ex:93
+#: lib/validator/rules.ex:119
+#, elixir-autogen, elixir-format
+msgid "The :attribute field is required when :other is :value."
+msgstr ""
+
+#: lib/validator/rules.ex:178
+#, elixir-autogen, elixir-format
+msgid "The :attribute may only contain letters and numbers."
+msgstr ""
+
+#: lib/validator/rules.ex:212
+#, elixir-autogen, elixir-format
+msgid "The :attribute may only contain letters, numbers, dashes and underscores."
+msgstr ""
+
+#: lib/validator/rules.ex:144
+#, elixir-autogen, elixir-format
+msgid "The :attribute may only contain letters."
+msgstr ""
+
+#: lib/validator/rules.ex:298
+#, elixir-autogen, elixir-format
+msgid "The :attribute must be a number."
+msgstr ""
+
+#: lib/validator/rules.ex:336
+#, elixir-autogen, elixir-format
+msgid "The :attribute must be a valid email address."
+msgstr ""
+
+#: lib/validator/rules.ex:271
+#, elixir-autogen, elixir-format
+msgid "The :attribute must be an decimal."
+msgstr ""
+
+#: lib/validator/rules.ex:242
+#, elixir-autogen, elixir-format
+msgid "The :attribute must be an integer."
+msgstr ""
+
+#: lib/validator/rules.ex:400
+#, elixir-autogen, elixir-format
+msgid "The selected :attribute is invalid."
+msgstr ""
