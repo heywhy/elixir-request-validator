@@ -8,7 +8,8 @@ defmodule Request.Validator.Helper do
   iex> import Request.Validator.Helper
   iex> import Request.Validator.Rulex
   iex> rules = ~V[required|email:format]
-  iex> match?([%{name: :required}, %{name: :email}], rules)
+  iex> [%{validator: _}, rule] = rules
+  iex> is_function(rule, 2)
   true
   """
   defmacro sigil_V({:<<>>, _, [rules]}, []) do

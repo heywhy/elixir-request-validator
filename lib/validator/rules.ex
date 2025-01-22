@@ -7,11 +7,13 @@ defmodule Request.Validator.Rulex do
 
   require Decimal
 
-  @type rule :: %{
-          required(:name) => atom(),
-          required(:validator) => (... -> :ok | {:error, String.t()}),
-          optional(:implicit?) => boolean()
-        }
+  @type validator :: (... -> :ok | {:error, String.t()})
+  @type rule ::
+          validator()
+          | %{
+              required(:validator) => validator(),
+              optional(:implicit?) => boolean()
+            }
 
   @backend Application.compile_env(
              :request_validator,
@@ -59,11 +61,7 @@ defmodule Request.Validator.Rulex do
       end
     end
 
-    %{
-      name: :required,
-      implicit?: true,
-      validator: validator_fn
-    }
+    %{implicit?: true, validator: validator_fn}
   end
 
   @doc """
@@ -96,7 +94,6 @@ defmodule Request.Validator.Rulex do
     end
 
     %{
-      name: :required_if,
       implicit?: true,
       validator: &validator_fn.(condition, &1, &2, validator_fn)
     }
@@ -134,7 +131,6 @@ defmodule Request.Validator.Rulex do
     end
 
     %{
-      name: :required_if,
       implicit?: true,
       validator: &(check_fn.(other, value, op, &3) |> validator_fn.(&1, &2, other, value))
     }
@@ -144,7 +140,7 @@ defmodule Request.Validator.Rulex do
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = string()
+  iex> fun = string()
   iex> fun.("content", "")
   :ok
   iex> fun.("content", 1)
@@ -164,14 +160,14 @@ defmodule Request.Validator.Rulex do
       check(is_binary(value), message)
     end
 
-    %{name: :string, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = alpha()
+  iex> fun = alpha()
   iex> fun.("uid", "abcde")
   :ok
   iex> fun.("uid", 1)
@@ -194,14 +190,14 @@ defmodule Request.Validator.Rulex do
       |> check(message)
     end
 
-    %{name: :alpha, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = alpha_num()
+  iex> fun = alpha_num()
   iex> fun.("ref", "1ab2de3")
   :ok
   iex> fun.("ref", 1)
@@ -229,14 +225,14 @@ defmodule Request.Validator.Rulex do
       |> check(message)
     end
 
-    %{name: :alpha_num, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = alpha_dash()
+  iex> fun = alpha_dash()
   iex> fun.("username", "abcde2")
   :ok
   iex> fun.("username", "ab_d-2")
@@ -265,14 +261,14 @@ defmodule Request.Validator.Rulex do
       |> check(message)
     end
 
-    %{name: :alpha_dash, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = integer()
+  iex> fun = integer()
   iex> fun.("age", 1)
   :ok
   iex> fun.("age", 2.0)
@@ -294,14 +290,14 @@ defmodule Request.Validator.Rulex do
       check(is_integer(value), message)
     end
 
-    %{name: :integer, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = decimal()
+  iex> fun = decimal()
   iex> fun.("amount", 2.0)
   :ok
   iex> fun.("amount", Decimal.new("9.999"))
@@ -319,20 +315,21 @@ defmodule Request.Validator.Rulex do
   """
   @spec decimal() :: rule()
   def decimal do
+    # TODO: support decimal places validation.
     validator_fn = fn attr, value ->
       message = gettext("The %{attribute} field must be a decimal.", attribute: attr)
 
       check(is_float(value) or Decimal.is_decimal(value), message)
     end
 
-    %{name: :decimal, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = numeric()
+  iex> fun = numeric()
   iex> fun.("width", 2.0)
   :ok
   iex> fun.("width", 1)
@@ -354,20 +351,20 @@ defmodule Request.Validator.Rulex do
       check(is_number(value), message)
     end
 
-    %{name: :numeric, validator: &validator_fn.(&1, &2)}
+    &validator_fn.(&1, &2)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = email()
+  iex> fun = email()
   iex> fun.("email", "test@gmail.com")
   :ok
-  iex> %{validator: fun} = email([:format])
+  iex> fun = email([:format])
   iex> fun.("email", "a@b.com")
   :ok
-  iex> %{validator: fun} = email(["mx"])
+  iex> fun = email(["mx"])
   iex> fun.("email", "a@b.com")
   {:error, "The email field must be a valid email address."}
   iex> fun.("email", 2.0)
@@ -394,7 +391,7 @@ defmodule Request.Validator.Rulex do
       check(is_binary(value) and EmailChecker.valid?(value, validations), message)
     end
 
-    %{name: :email, validator: &validator_fn.(validations, &1, &2)}
+    &validator_fn.(validations, &1, &2)
   end
 
   @doc """
@@ -406,7 +403,7 @@ defmodule Request.Validator.Rulex do
   ...>   "password_confirmation" => 12345678,
   ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
   ...> }
-  iex> %{validator: fun} = confirmed()
+  iex> fun = confirmed()
   iex> fun.("password", 12345678, data)
   :ok
   iex> fun.("list.0.a", 1, data)
@@ -436,14 +433,14 @@ defmodule Request.Validator.Rulex do
       |> check(message)
     end
 
-    %{name: :confirmed, validator: &validator_fn.(confirmation, &1, &2, &3)}
+    &validator_fn.(confirmation, &1, &2, &3)
   end
 
   @doc """
   ## Examples
 
   iex> import Request.Validator.Rulex
-  iex> %{validator: fun} = allowed(["male", "female"])
+  iex> fun = allowed(["male", "female"])
   iex> fun.("gender", "male")
   :ok
   iex> fun.("gender", "female")
@@ -463,7 +460,7 @@ defmodule Request.Validator.Rulex do
       |> check(message)
     end
 
-    %{name: :allowed, validator: &validator_fn.(options, &1, &2)}
+    &validator_fn.(options, &1, &2)
   end
 
   defp check(cond, message) do
