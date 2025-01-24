@@ -3,7 +3,7 @@ defmodule Request.Validator.Rulex do
   alias EmailChecker.Check.MX
   alias Request.Validator.Utils
 
-  import Gettext.Macros, only: [gettext_with_backend: 3, gettext_with_backend: 2]
+  import Gettext.Macros, only: [gettext_with_backend: 3]
 
   require Decimal
 
