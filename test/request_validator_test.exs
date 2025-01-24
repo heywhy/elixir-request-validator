@@ -30,7 +30,7 @@ defmodule RequestValidatorTest do
   test "fails map validation" do
     params = %{
       address: %{
-        country: "US"
+        country: "NG"
       },
       documents: [
         "hello",
@@ -50,7 +50,8 @@ defmodule RequestValidatorTest do
     assert conn.status == 422
     assert conn.resp_body =~ "field is required"
     assert conn.resp_body =~ "address.line1"
-    refute conn.resp_body =~ "address.country"
+    assert conn.resp_body =~ "The address.state field is required when address.country is NG."
+    refute conn.resp_body =~ "The address.country field is required."
     assert conn.resp_body =~ "The documents.0.name field is required."
     assert conn.resp_body =~ "The documents.1.tags.0 field must be a string."
     refute conn.resp_body =~ "The documents.2.tags.0 field must be a string."

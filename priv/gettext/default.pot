@@ -11,62 +11,62 @@
 msgid ""
 msgstr ""
 
-#: lib/validator/rules.ex:55
+#: lib/validator/rules.ex:54
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field is required."
 msgstr ""
 
-#: lib/validator/rules.ex:124
+#: lib/validator/rules.ex:116
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field is required when %{other} is %{value}."
 msgstr ""
 
-#: lib/validator/rules.ex:159
+#: lib/validator/rules.ex:151
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a string."
 msgstr ""
 
-#: lib/validator/rules.ex:186
+#: lib/validator/rules.ex:178
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must only contain letters."
 msgstr ""
 
-#: lib/validator/rules.ex:219
+#: lib/validator/rules.ex:211
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must only contain letters and numbers."
 msgstr ""
 
-#: lib/validator/rules.ex:254
+#: lib/validator/rules.ex:246
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must only contain letters, numbers, dashes, and underscores."
 msgstr ""
 
-#: lib/validator/rules.ex:289
+#: lib/validator/rules.ex:281
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be an integer."
 msgstr ""
 
-#: lib/validator/rules.ex:321
+#: lib/validator/rules.ex:313
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a decimal."
 msgstr ""
 
-#: lib/validator/rules.ex:350
+#: lib/validator/rules.ex:342
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a number."
 msgstr ""
 
-#: lib/validator/rules.ex:390
+#: lib/validator/rules.ex:382
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a valid email address."
 msgstr ""
 
-#: lib/validator/rules.ex:429
+#: lib/validator/rules.ex:419
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field confirmation does not match."
 msgstr ""
 
-#: lib/validator/rules.ex:457
+#: lib/validator/rules.ex:444
 #, elixir-autogen, elixir-format
 msgid "The selected %{attribute} is invalid."
 msgstr ""
