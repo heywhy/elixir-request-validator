@@ -13,11 +13,8 @@ defmodule Request.Validator.Plug do
     on_error: fn conn, errors -> json_resp(conn, "Handle your errors: #{inspect errors}") end
   ```
   """
-  def init(opts) when is_map(opts), do: init(Keyword.new(opts))
-
   def init(opts) do
-    opts
-    |> Keyword.put_new(:on_error, &Validator.Plug.on_error/2)
+    Keyword.put_new(opts, :on_error, &Validator.Plug.on_error/2)
   end
 
   @doc ~S"""
@@ -56,7 +53,6 @@ defmodule Request.Validator.Plug do
     end
   end
 
-  defp get_validator(opt, key) when is_map(opt), do: Map.get(opt, key)
   defp get_validator(opt, key) when is_list(opt), do: Keyword.get(opt, key)
 
   defp json_resp(conn, status, body) do

@@ -1,7 +1,7 @@
 defmodule RequestValidatorTest.RegisterRequest do
   use Request.Validator
 
-  import Request.Validator.Rulex
+  import Request.Validator.Rules
 
   @impl Request.Validator
   def rules(_) do

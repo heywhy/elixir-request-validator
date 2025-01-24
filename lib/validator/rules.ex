@@ -1,4 +1,4 @@
-defmodule Request.Validator.Rulex do
+defmodule Request.Validator.Rules do
   alias EmailChecker.Check.Format
   alias EmailChecker.Check.MX
   alias Request.Validator.Utils
@@ -30,7 +30,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> %{validator: fun} = required()
   iex> fun.("name", "")
   {:error, "The name field is required."}
@@ -67,7 +67,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> %{validator: fun} = required_if(true)
   iex> fun.("description", "")
   {:error, "The description field is required."}
@@ -132,7 +132,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = string()
   iex> fun.("content", "")
   :ok
@@ -159,7 +159,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = alpha()
   iex> fun.("uid", "abcde")
   :ok
@@ -189,7 +189,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = alpha_num()
   iex> fun.("ref", "1ab2de3")
   :ok
@@ -224,7 +224,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = alpha_dash()
   iex> fun.("username", "abcde2")
   :ok
@@ -260,7 +260,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = integer()
   iex> fun.("age", 1)
   :ok
@@ -289,7 +289,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = decimal()
   iex> fun.("amount", 2.0)
   :ok
@@ -321,7 +321,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = numeric()
   iex> fun.("width", 2.0)
   :ok
@@ -350,7 +350,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = email()
   iex> fun.("email", "test@gmail.com")
   :ok
@@ -391,7 +391,7 @@ defmodule Request.Validator.Rulex do
   ## Examples
 
   iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> data = Fields.new(%{
   ...>   "password" => 12345678,
   ...>   "password_confirmation" => 12345678,
@@ -427,7 +427,7 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> fun = allowed(["male", "female"])
   iex> fun.("gender", "male")
   :ok

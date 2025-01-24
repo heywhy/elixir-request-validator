@@ -1,7 +1,7 @@
 defmodule Request.Validator.RulesTest do
   use ExUnit.Case
 
-  alias Request.Validator.Rulex
+  alias Request.Validator.Rules
 
-  doctest(Rulex)
+  doctest(Rules)
 end

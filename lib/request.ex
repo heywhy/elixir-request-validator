@@ -46,7 +46,7 @@ defmodule Request.Validator do
   ## Examples
 
   iex> import Request.Validator
-  iex> import Request.Validator.Rulex
+  iex> import Request.Validator.Rules
   iex> rules = ~V[required|email:format]
   iex> [%{validator: _}, rule] = rules
   iex> is_function(rule, 2)
