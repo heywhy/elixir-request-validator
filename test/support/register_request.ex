@@ -1,29 +1,31 @@
 defmodule RequestValidatorTest.RegisterRequest do
   use Request.Validator
 
+  import Request.Validator.Rulex
+
   @impl Request.Validator
   def rules(_) do
-    [
-      email: [:required, :email, unique(&unique_email?/2)],
-      name: required(:string),
-      password: required(~w[string confirmed]a),
-      gender: required(in_list(~w[male female])),
-      age: required([:numeric, min(2), max(32)]),
-      year: [:required, :numeric, min(1990), max(2000)],
-      mother_age: [:required, :numeric, gt(:age)],
-      address:
-        map(
-          line1: required(:string),
-          line2: ~w[string]a,
-          country: required(:string)
-        ),
-      documents:
-        array(
-          file: [:string],
-          name: required(:string),
-          type: [:required, {:in_list, ~w[certificate memart]}]
-        )
-    ]
+    %{
+      "email" => ~V[required|email],
+      "name" => ~V[required|string],
+      "password" => ~V[required|string|confirmed],
+      "gender" => ~V[required|allowed:male,female],
+      # "age" => ~V[required|numeric|min:2|max:32],
+      # "year" => ~V[required|numeric|min:1990|max:2000],
+      # "mother_age" => ~V[required|numeric|gt:age],
+      # "address" => ~V[required|map],
+      "address.line1" => ~V[required|string],
+      "address.line2" => ~V[string],
+      "address.city" => ~V[required|string],
+      "address.state" => [required_if(["address.country", "NG"]), string()],
+      "address.country" => ~V[required|string],
+      "documents" => ~V[required],
+      "documents.*.file" => ~V[string],
+      "documents.*.name" => ~V[required|string],
+      "documents.*.type" => ~V[required|allowed:certificate,memart],
+      "documents.*.tags" => ~V[required],
+      "documents.*.tags.*" => ~V[string]
+    }
   end
 
   @impl Request.Validator

@@ -107,13 +107,6 @@ defmodule Request.Validator.Rulex do
   defp required_if(other, value, op) do
     %{validator: required} = required()
 
-    check_fn = fn attr, value, op, data ->
-      attr_path = Utils.convert_to_path(attr)
-      other = get_in(data, attr_path)
-
-      op.(other, value)
-    end
-
     validator_fn = fn
       false, _, _, _, _ ->
         :ok
@@ -132,7 +125,7 @@ defmodule Request.Validator.Rulex do
 
     %{
       implicit?: true,
-      validator: &(check_fn.(other, value, op, &3) |> validator_fn.(&1, &2, other, value))
+      validator: &(op.(&3[other], value) |> validator_fn.(&1, &2, other, value))
     }
   end
 
@@ -397,12 +390,13 @@ defmodule Request.Validator.Rulex do
   @doc """
   ## Examples
 
+  iex> alias Request.Validator.Fields
   iex> import Request.Validator.Rulex
-  iex> data = %{
+  iex> data = Fields.new(%{
   ...>   "password" => 12345678,
   ...>   "password_confirmation" => 12345678,
   ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
-  ...> }
+  ...> })
   iex> fun = confirmed()
   iex> fun.("password", 12345678, data)
   :ok
@@ -422,15 +416,9 @@ defmodule Request.Validator.Rulex do
           confirmation -> confirmation
         end
 
-      # INFO: maybe not convert to path and have the data already flatten?
-      confirmation_path = Utils.convert_to_path(confirmation)
-
       message = gettext("The %{attribute} field confirmation does not match.", attribute: attr)
 
-      data
-      |> get_in(confirmation_path)
-      |> Kernel.==(value)
-      |> check(message)
+      check(data[confirmation] == value, message)
     end
 
     &validator_fn.(confirmation, &1, &2, &3)
