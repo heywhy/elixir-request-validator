@@ -88,9 +88,23 @@ defmodule Request.Validator do
   end
 
   defp rule_to_expr({rule, arg}) do
+    arg = convert_params(arg)
     arg = Macro.escape(arg)
 
     quote do: unquote(rule)(unquote(arg))
+  end
+
+  defp convert_params(arg), do: Enum.map(arg, &maybe_convert_to_number/1)
+
+  defp maybe_convert_to_number(param) do
+    number_converters = [&Integer.parse/1, &Float.parse/1]
+
+    Enum.reduce_while(number_converters, param, fn fun, acc ->
+      case fun.(acc) do
+        {num, ""} -> {:halt, num}
+        _ -> {:cont, acc}
+      end
+    end)
   end
 
   defmacro __using__(opts) do

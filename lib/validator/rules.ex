@@ -409,7 +409,7 @@ defmodule Request.Validator.Rules do
   """
   @spec confirmed(nil | String.t()) :: rule()
   def confirmed(confirmation \\ nil) do
-    validator_fn = fn confirmation, attr, value, data ->
+    validator_fn = fn confirmation, attr, value, fields ->
       confirmation =
         case confirmation do
           nil -> attr <> "_confirmation"
@@ -418,7 +418,7 @@ defmodule Request.Validator.Rules do
 
       message = gettext("The %{attribute} field confirmation does not match.", attribute: attr)
 
-      check(data[confirmation] == value, message)
+      check(fields[confirmation] == value, message)
     end
 
     &validator_fn.(confirmation, &1, &2, &3)
@@ -439,7 +439,7 @@ defmodule Request.Validator.Rules do
   {:error, "The selected gender is invalid."}
   """
   @spec allowed([term()]) :: rule()
-  def allowed(options) do
+  def allowed(options) when is_list(options) do
     validator_fn = fn options, attr, value ->
       message = gettext("The selected %{attribute} is invalid.", attribute: attr)
 
@@ -449,6 +449,132 @@ defmodule Request.Validator.Rules do
     end
 
     &validator_fn.(options, &1, &2)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules
+  iex> fun = min([30])
+  iex> fun.("age", 40)
+  :ok
+  iex> fun.("age", 10)
+  {:error, "The age field must be at least 30."}
+  iex> fun = min(6)
+  iex> fun.("password", "pass")
+  {:error, "The password field must be at least 6 characters."}
+  iex> fun.("password", "password")
+  :ok
+  iex> fun = min(1)
+  iex> fun.("tags", [])
+  {:error, "The tags field must be at least 1 items."}
+  iex> fun.("tags", [1, 3])
+  :ok
+  """
+  def min([bound]), do: min(bound)
+
+  def min(bound) when is_number(bound) do
+    # TODO: check for `Plug.Upload` size.
+    validator_fn = fn
+      bound, attr, value when is_number(value) ->
+        message =
+          gettext("The %{attribute} field must be at least %{min}.",
+            attribute: attr,
+            min: bound
+          )
+
+        check(value >= bound, message)
+
+      bound, attr, value when is_binary(value) ->
+        message =
+          gettext("The %{attribute} field must be at least %{min} characters.",
+            attribute: attr,
+            min: bound
+          )
+
+        value
+        |> String.length()
+        |> Kernel.>=(bound)
+        |> check(message)
+
+      bound, attr, value when is_list(value) ->
+        message =
+          gettext("The %{attribute} field must be at least %{min} items.",
+            attribute: attr,
+            min: bound
+          )
+
+        value
+        |> Enum.count()
+        |> Kernel.>=(bound)
+        |> check(message)
+    end
+
+    &validator_fn.(bound, &1, &2)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules
+  iex> fun = max([30])
+  iex> fun.("age", 20)
+  :ok
+  iex> fun.("age", 30)
+  :ok
+  iex> fun.("age", 40)
+  {:error, "The age field must not be greater than 30."}
+  iex> fun = max(6)
+  iex> fun.("otp", "1611675")
+  {:error, "The otp field must not be greater than 6 characters."}
+  iex> fun.("otp", "955764")
+  :ok
+  iex> fun = max(2)
+  iex> fun.("tags", [1, 2, 3])
+  {:error, "The tags field must not be greater than 2 items."}
+  iex> fun.("tags", [1, 3])
+  :ok
+  """
+  def max([bound]), do: max(bound)
+
+  def max(bound) when is_number(bound) do
+    # TODO: check for `Plug.Upload` size.
+    validator_fn = fn
+      bound, attr, value when is_number(value) ->
+        message =
+          gettext("The %{attribute} field must not be greater than %{max}.",
+            attribute: attr,
+            max: bound
+          )
+
+        check(value <= bound, message)
+
+      bound, attr, value when is_binary(value) ->
+        message =
+          gettext("The %{attribute} field must not be greater than %{max} characters.",
+            attribute: attr,
+            max: bound
+          )
+
+        value
+        |> String.length()
+        |> Kernel.<=(bound)
+        |> check(message)
+
+      bound, attr, value when is_list(value) ->
+        message =
+          gettext("The %{attribute} field must not be greater than %{max} items.",
+            attribute: attr,
+            max: bound
+          )
+
+        value
+        |> Enum.count()
+        |> Kernel.<=(bound)
+        |> check(message)
+    end
+
+    &validator_fn.(bound, &1, &2)
   end
 
   defp check(cond, message) do
