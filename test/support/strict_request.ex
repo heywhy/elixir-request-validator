@@ -1,5 +1,5 @@
 defmodule RequestValidatorTest.StrictRequest do
-  use Request.Validator, strict: true
+  use Request.Validator, strict?: true
 
   import Request.Validator.Rules
 

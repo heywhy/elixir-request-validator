@@ -31,10 +31,12 @@ defmodule Request.Validator do
           module.rules()
       end
 
+    opts = set_default_opts(opts)
+
     errors =
       params
       |> Fields.new()
-      |> collect_errors(rules, set_strict_default(opts))
+      |> collect_errors(rules, opts)
 
     case Enum.empty?(errors) do
       true -> :ok
@@ -203,13 +205,15 @@ defmodule Request.Validator do
     end
   end
 
-  defp set_strict_default(opts) do
-    Keyword.put_new(opts, :strict, Application.get_env(:request_validator, :strict, false))
+  defp set_default_opts(opts) do
+    Keyword.put_new_lazy(opts, :strict?, fn ->
+      Application.get_env(:request_validator, :strict?, false)
+    end)
   end
 
   defp undeclared_fields(fields, rules, opts) do
     opts
-    |> Keyword.get(:strict, false)
+    |> Keyword.get(:strict?, false)
     |> case do
       false ->
         []
