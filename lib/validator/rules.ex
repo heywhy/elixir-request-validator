@@ -475,39 +475,29 @@ defmodule Request.Validator.Rules do
 
   def min(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
-    validator_fn = fn
-      bound, attr, value when is_number(value) ->
-        message =
-          gettext("The %{attribute} field must be at least %{min}.",
-            attribute: attr,
-            min: bound
-          )
+    validator_fn = fn bound, attr, value ->
+      message =
+        case get_type(value) do
+          :numeric ->
+            gettext("The %{attribute} field must be at least %{min}.",
+              attribute: attr,
+              min: bound
+            )
 
-        check(value >= bound, message)
+          :string ->
+            gettext("The %{attribute} field must be at least %{min} characters.",
+              attribute: attr,
+              min: bound
+            )
 
-      bound, attr, value when is_binary(value) ->
-        message =
-          gettext("The %{attribute} field must be at least %{min} characters.",
-            attribute: attr,
-            min: bound
-          )
+          :list ->
+            gettext("The %{attribute} field must be at least %{min} items.",
+              attribute: attr,
+              min: bound
+            )
+        end
 
-        value
-        |> String.length()
-        |> Kernel.>=(bound)
-        |> check(message)
-
-      bound, attr, value when is_list(value) ->
-        message =
-          gettext("The %{attribute} field must be at least %{min} items.",
-            attribute: attr,
-            min: bound
-          )
-
-        value
-        |> Enum.count()
-        |> Kernel.>=(bound)
-        |> check(message)
+      check(get_size(value) >= bound, message)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -539,39 +529,29 @@ defmodule Request.Validator.Rules do
 
   def max(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
-    validator_fn = fn
-      bound, attr, value when is_number(value) ->
-        message =
-          gettext("The %{attribute} field must not be greater than %{max}.",
-            attribute: attr,
-            max: bound
-          )
+    validator_fn = fn bound, attr, value ->
+      message =
+        case get_type(value) do
+          :numeric ->
+            gettext("The %{attribute} field must not be greater than %{max}.",
+              attribute: attr,
+              max: bound
+            )
 
-        check(value <= bound, message)
+          :list ->
+            gettext("The %{attribute} field must not be greater than %{max} items.",
+              attribute: attr,
+              max: bound
+            )
 
-      bound, attr, value when is_binary(value) ->
-        message =
-          gettext("The %{attribute} field must not be greater than %{max} characters.",
-            attribute: attr,
-            max: bound
-          )
+          :string ->
+            gettext("The %{attribute} field must not be greater than %{max} characters.",
+              attribute: attr,
+              max: bound
+            )
+        end
 
-        value
-        |> String.length()
-        |> Kernel.<=(bound)
-        |> check(message)
-
-      bound, attr, value when is_list(value) ->
-        message =
-          gettext("The %{attribute} field must not be greater than %{max} items.",
-            attribute: attr,
-            max: bound
-          )
-
-        value
-        |> Enum.count()
-        |> Kernel.<=(bound)
-        |> check(message)
+      check(get_size(value) <= bound, message)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -583,4 +563,12 @@ defmodule Request.Validator.Rules do
       false -> {:error, message}
     end
   end
+
+  defp get_size(num) when is_number(num), do: num
+  defp get_size(value) when is_binary(value), do: String.length(value)
+  defp get_size(list) when is_list(list), do: Enum.count(list)
+
+  defp get_type(num) when is_number(num), do: :numeric
+  defp get_type(value) when is_binary(value), do: :string
+  defp get_type(list) when is_list(list), do: :list
 end

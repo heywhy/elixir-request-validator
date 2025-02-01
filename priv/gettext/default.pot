@@ -71,32 +71,32 @@ msgstr ""
 msgid "The selected %{attribute} is invalid."
 msgstr ""
 
-#: lib/validator/rules.ex:490
+#: lib/validator/rules.ex:488
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be at least %{min} characters."
 msgstr ""
 
-#: lib/validator/rules.ex:502
+#: lib/validator/rules.ex:494
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be at least %{min} items."
 msgstr ""
 
-#: lib/validator/rules.ex:481
+#: lib/validator/rules.ex:482
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be at least %{min}."
 msgstr ""
 
-#: lib/validator/rules.ex:545
+#: lib/validator/rules.ex:536
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must not be greater than %{max}."
 msgstr ""
 
-#: lib/validator/rules.ex:554
+#: lib/validator/rules.ex:548
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must not be greater than %{max} characters."
 msgstr ""
 
-#: lib/validator/rules.ex:566
+#: lib/validator/rules.ex:542
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must not be greater than %{max} items."
 msgstr ""

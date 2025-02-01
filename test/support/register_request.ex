@@ -5,13 +5,14 @@ defmodule RequestValidatorTest.RegisterRequest do
 
   @impl Request.Validator
   def rules(_) do
+    # TODO: update rules
     %{
       "email" => ~V[required|email],
       "name" => ~V[required|string],
       "password" => ~V[required|string|confirmed],
       "gender" => ~V[required|allowed:male,female],
-      # "age" => ~V[required|numeric|min:2|max:32],
-      # "year" => ~V[required|numeric|min:1990|max:2000],
+      "age" => ~V[required|numeric|min:2|max:32],
+      "year" => ~V[required|numeric|min:1990|max:2000],
       # "mother_age" => ~V[required|numeric|gt:age],
       # "address" => ~V[required|map],
       "address.line1" => ~V[required|string],
