@@ -392,19 +392,19 @@ defmodule Request.Validator.Rules do
 
   iex> alias Request.Validator.Fields
   iex> import Request.Validator.Rules
-  iex> data = Fields.new(%{
+  iex> fields = Fields.new(%{
   ...>   "password" => 12345678,
   ...>   "password_confirmation" => 12345678,
   ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
   ...> })
   iex> fun = confirmed()
-  iex> fun.("password", 12345678, data)
+  iex> fun.("password", 12345678, fields)
   :ok
-  iex> fun.("list.0.a", 1, data)
+  iex> fun.("list.0.a", 1, fields)
   :ok
-  iex> fun.("password", "yikes!", data)
+  iex> fun.("password", "yikes!", fields)
   {:error, "The password field confirmation does not match."}
-  iex> fun.("list.0.a", 10, data)
+  iex> fun.("list.0.a", 10, fields)
   {:error, "The list.0.a field confirmation does not match."}
   """
   @spec confirmed(nil | String.t()) :: rule()
