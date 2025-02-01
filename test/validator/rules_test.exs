@@ -1,5 +1,5 @@
 defmodule Request.Validator.RulesTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Request.Validator.Rules
 
