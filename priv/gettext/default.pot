@@ -177,7 +177,17 @@ msgid "The %{attribute} field must contain %{size} items."
 msgstr ""
 
 #: lib/validator/rules.ex:921
-#: lib/validator/rules.ex:953
+#: lib/validator/rules.ex:951
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a valid URL."
+msgstr ""
+
+#: lib/validator/rules.ex:980
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be a list."
+msgstr ""
+
+#: lib/validator/rules.ex:1004
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be a map."
 msgstr ""

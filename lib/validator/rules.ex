@@ -917,7 +917,7 @@ defmodule Request.Validator.Rules do
   {:error, "The url field must be a valid URL."}
   """
   def url do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a valid URL.", attribute: attr)
 
       value
@@ -930,8 +930,6 @@ defmodule Request.Validator.Rules do
       )
       |> check(message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc """
@@ -949,7 +947,7 @@ defmodule Request.Validator.Rules do
   def active_url do
     url_fn = url()
 
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a valid URL.", attribute: attr)
 
       case url_fn.(attr, value) do
@@ -965,8 +963,64 @@ defmodule Request.Validator.Rules do
           error
       end
     end
+  end
 
-    &validator_fn.(&1, &2)
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [list: 0]
+  iex> fun = list()
+  iex> fun.("emails", 4)
+  {:error, "The emails field must be a list."}
+  iex> fun.("emails", ["a@b.com"])
+  :ok
+  """
+  def list do
+    fn attr, value ->
+      message = gettext("The %{attribute} field must be a list.", attribute: attr)
+
+      check(is_list(value), message)
+    end
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [map: 0, map: 1]
+  iex> fun = map()
+  iex> metadata = %{"a" => "b", "c" => "d"}
+  iex> fun.("metadata", 4)
+  {:error, "The metadata field must be a map."}
+  iex> fun.("metadata", metadata)
+  :ok
+  iex> fun = map(["a", "c"])
+  iex> fun.("metadata", metadata)
+  :ok
+  iex> fun.("metadata", Map.put(metadata, "e", "f"))
+  {:error, "The metadata field must be a map."}
+  """
+  def map(keys \\ []) when is_list(keys) do
+    validator_fn = fn keys, attr, value ->
+      message = gettext("The %{attribute} field must be a map.", attribute: attr)
+
+      cond =
+        case keys do
+          [] -> is_map(value)
+          keys -> is_map(value) and diff_keys_empty?(value, keys)
+        end
+
+      check(cond, message)
+    end
+
+    &validator_fn.(keys, &1, &2)
+  end
+
+  defp diff_keys_empty?(map, keys) when is_map(map) and is_list(keys) do
+    map
+    |> Map.keys()
+    |> MapSet.new()
+    |> MapSet.symmetric_difference(MapSet.new(keys))
+    |> Enum.empty?()
   end
 
   defp check_with_op(first, second, op, messages) do
