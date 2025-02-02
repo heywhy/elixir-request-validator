@@ -476,28 +476,25 @@ defmodule Request.Validator.Rules do
   def min(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
     validator_fn = fn bound, attr, value ->
-      message =
-        case get_type(value) do
-          :numeric ->
-            gettext("The %{attribute} field must be at least %{min}.",
-              attribute: attr,
-              min: bound
-            )
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must be at least %{min}.",
+            attribute: attr,
+            min: bound
+          ),
+        string:
+          gettext("The %{attribute} field must be at least %{min} characters.",
+            attribute: attr,
+            min: bound
+          ),
+        list:
+          gettext("The %{attribute} field must be at least %{min} items.",
+            attribute: attr,
+            min: bound
+          )
+      }
 
-          :string ->
-            gettext("The %{attribute} field must be at least %{min} characters.",
-              attribute: attr,
-              min: bound
-            )
-
-          :list ->
-            gettext("The %{attribute} field must be at least %{min} items.",
-              attribute: attr,
-              min: bound
-            )
-        end
-
-      check(get_size(value) >= bound, message)
+      check_with_op(value, bound, &Kernel.>=/2, messages)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -530,31 +527,196 @@ defmodule Request.Validator.Rules do
   def max(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
     validator_fn = fn bound, attr, value ->
-      message =
-        case get_type(value) do
-          :numeric ->
-            gettext("The %{attribute} field must not be greater than %{max}.",
-              attribute: attr,
-              max: bound
-            )
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must not be greater than %{max}.",
+            attribute: attr,
+            max: bound
+          ),
+        list:
+          gettext("The %{attribute} field must not be greater than %{max} items.",
+            attribute: attr,
+            max: bound
+          ),
+        string:
+          gettext("The %{attribute} field must not be greater than %{max} characters.",
+            attribute: attr,
+            max: bound
+          )
+      }
 
-          :list ->
-            gettext("The %{attribute} field must not be greater than %{max} items.",
-              attribute: attr,
-              max: bound
-            )
-
-          :string ->
-            gettext("The %{attribute} field must not be greater than %{max} characters.",
-              attribute: attr,
-              max: bound
-            )
-        end
-
-      check(get_size(value) <= bound, message)
+      check_with_op(value, bound, &Kernel.<=/2, messages)
     end
 
     &validator_fn.(bound, &1, &2)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> alias Request.Validator.Fields
+  iex> import Request.Validator.Rules
+  iex> fields = Fields.new(%{
+  ...>   "age" => 30,
+  ...>   "items" => [0, 1],
+  ...>   "passphrase" => "tango"
+  ...> })
+  iex> fun = gt("age")
+  iex> fun.("mother_age", 25, fields)
+  {:error, "The mother_age field must be greater than 30."}
+  iex> fun.("mother_age", 45, fields)
+  :ok
+  iex> fun = gt(30)
+  iex> fun.("mother_age", 20, fields)
+  {:error, "The mother_age field must be greater than 30."}
+  iex> fun.("mother_age", "20", fields)
+  {:error, "The mother_age field must be greater than 30 characters."}
+  iex> fun.("mother_age", 50, fields)
+  :ok
+  iex> fun = gt("passphrase")
+  iex> fun.("passphrase_hash", "milk", fields)
+  {:error, "The passphrase_hash field must be greater than 5 characters."}
+  iex> fun.("passphrase_hash", "aHsychxUY", fields)
+  :ok
+  iex> fun = gt("items")
+  iex> fun.("sub_items", [2, 3, 4], fields)
+  :ok
+  iex> fun.("sub_items", [1], fields)
+  {:error, "The sub_items field must be greater than 2 items."}
+  iex> fun.("sub_items", "milk", fields)
+  {:error, "The sub_items field must be greater than 2 characters."}
+  """
+  def gt([bound]), do: gt(bound)
+
+  def gt(bound) when is_binary(bound) or is_number(bound) do
+    validator_fn = fn bound, attr, value, fields ->
+      compared_value = fields[bound]
+      v = get_size(compared_value) || bound
+
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must be greater than %{value}.",
+            attribute: attr,
+            value: v
+          ),
+        list:
+          gettext("The %{attribute} field must be greater than %{value} items.",
+            attribute: attr,
+            value: v
+          ),
+        string:
+          gettext("The %{attribute} field must be greater than %{value} characters.",
+            attribute: attr,
+            value: v
+          )
+      }
+
+      cond do
+        is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
+          check_with_op(value, bound, &Kernel.>/2, messages)
+
+        is_number(bound) ->
+          {:error, messages.string}
+
+        same_type?(value, compared_value) ->
+          check_with_op(value, compared_value, &Kernel.>/2, messages)
+
+        true ->
+          {:error, messages.string}
+      end
+    end
+
+    &validator_fn.(bound, &1, &2, &3)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> alias Request.Validator.Fields
+  iex> import Request.Validator.Rules
+  iex> fields = Fields.new(%{
+  ...>   "mother_age" => 30,
+  ...>   "items" => [0, 1],
+  ...>   "essay" => "lorem ipsum"
+  ...> })
+  iex> fun = lt("mother_age")
+  iex> fun.("child_age", 30, fields)
+  {:error, "The child_age field must be less than 30."}
+  iex> fun.("child_age", 18, fields)
+  :ok
+  iex> fun = lt(30)
+  iex> fun.("child_age", 50, fields)
+  {:error, "The child_age field must be less than 30."}
+  iex> fun.("child_age", "20", fields)
+  {:error, "The child_age field must be less than 30 characters."}
+  iex> fun.("child_age", 20, fields)
+  :ok
+  iex> fun = lt("essay")
+  iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
+  {:error, "The comment field must be less than 11 characters."}
+  iex> fun.("comment", "lorem", fields)
+  :ok
+  iex> fun = lt("items")
+  iex> fun.("sub_items", [], fields)
+  :ok
+  iex> fun.("sub_items", [2, 3, 4], fields)
+  {:error, "The sub_items field must be less than 2 items."}
+  iex> fun.("sub_items", "milk", fields)
+  {:error, "The sub_items field must be less than 2 characters."}
+  """
+  def lt([bound]), do: lt(bound)
+
+  def lt(bound) when is_binary(bound) or is_number(bound) do
+    validator_fn = fn bound, attr, value, fields ->
+      compared_value = fields[bound]
+      v = get_size(compared_value) || bound
+
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must be less than %{value}.",
+            attribute: attr,
+            value: v
+          ),
+        list:
+          gettext("The %{attribute} field must be less than %{value} items.",
+            attribute: attr,
+            value: v
+          ),
+        string:
+          gettext("The %{attribute} field must be less than %{value} characters.",
+            attribute: attr,
+            value: v
+          )
+      }
+
+      cond do
+        is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
+          check_with_op(value, bound, &Kernel.</2, messages)
+
+        is_number(bound) ->
+          {:error, messages.string}
+
+        same_type?(value, compared_value) ->
+          check_with_op(value, compared_value, &Kernel.</2, messages)
+
+        true ->
+          {:error, messages.string}
+      end
+    end
+
+    &validator_fn.(bound, &1, &2, &3)
+  end
+
+  defp check_with_op(first, second, op, messages) do
+    message =
+      case messages do
+        %{} -> messages[get_type(first)]
+      end
+
+    first
+    |> get_size()
+    |> op.(get_size(second))
+    |> check(message)
   end
 
   defp check(cond, message) do
@@ -564,11 +726,15 @@ defmodule Request.Validator.Rules do
     end
   end
 
+  defp same_type?(a, b), do: get_type(a) == get_type(b)
+
   defp get_size(num) when is_number(num), do: num
   defp get_size(value) when is_binary(value), do: String.length(value)
   defp get_size(list) when is_list(list), do: Enum.count(list)
+  defp get_size(nil), do: nil
 
   defp get_type(num) when is_number(num), do: :numeric
   defp get_type(value) when is_binary(value), do: :string
   defp get_type(list) when is_list(list), do: :list
+  defp get_type(nil), do: nil
 end
