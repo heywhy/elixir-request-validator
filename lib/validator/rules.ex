@@ -1015,11 +1015,31 @@ defmodule Request.Validator.Rules do
     &validator_fn.(keys, &1, &2)
   end
 
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [boolean: 0]
+  iex> fun = boolean()
+  iex> fun.("notify_me", true)
+  :ok
+  iex> fun.("notify_me", 2)
+  {:error, "The notify_me field must be true or false."}
+  """
+  def boolean do
+    acceptables = [true, false, "1", "0", 1, 0]
+
+    fn attr, value ->
+      message = gettext("The %{attribute} field must be true or false.", attribute: attr)
+
+      check(value in acceptables, message)
+    end
+  end
+
   defp diff_keys_empty?(map, keys) when is_map(map) and is_list(keys) do
     map
     |> Map.keys()
     |> MapSet.new()
-    |> MapSet.symmetric_difference(MapSet.new(keys))
+    |> MapSet.difference(MapSet.new(keys))
     |> Enum.empty?()
   end
 
