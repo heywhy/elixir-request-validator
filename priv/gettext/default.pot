@@ -160,3 +160,24 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be less than or equal to %{value} characters."
 msgstr ""
+
+#: lib/validator/rules.ex:897
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be %{size} characters."
+msgstr ""
+
+#: lib/validator/rules.ex:890
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be %{size}."
+msgstr ""
+
+#: lib/validator/rules.ex:892
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must contain %{size} items."
+msgstr ""
+
+#: lib/validator/rules.ex:921
+#: lib/validator/rules.ex:953
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be a valid URL."
+msgstr ""

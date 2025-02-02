@@ -863,6 +863,112 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2, &3)
   end
 
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [size: 1]
+  iex> fun = size(5)
+  iex> fun.("age", 10)
+  {:error, "The age field must be 5."}
+  iex> fun.("age", 5)
+  :ok
+  iex> fun.("username", "chic")
+  {:error, "The username field must be 5 characters."}
+  iex> fun.("username", "chick")
+  :ok
+  iex> fun.("tags", ["chic"])
+  {:error, "The tags field must contain 5 items."}
+  iex> fun.("tags", Enum.to_list(1..5))
+  :ok
+  """
+  def size([bound]), do: size(bound)
+
+  def size(bound) when is_number(bound) do
+    # TODO: check for file size
+    validator_fn = fn bound, attr, value ->
+      messages = %{
+        numeric: gettext("The %{attribute} field must be %{size}.", attribute: attr, size: bound),
+        list:
+          gettext("The %{attribute} field must contain %{size} items.",
+            attribute: attr,
+            size: bound
+          ),
+        string:
+          gettext("The %{attribute} field must be %{size} characters.",
+            attribute: attr,
+            size: bound
+          )
+      }
+
+      check_with_op(value, bound, &Kernel.==/2, messages)
+    end
+
+    &validator_fn.(bound, &1, &2)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [url: 0]
+  iex> fun = url()
+  iex> fun.("url", "https://google.com")
+  :ok
+  iex> fun.("url", "invalid_url")
+  {:error, "The url field must be a valid URL."}
+  """
+  def url do
+    validator_fn = fn attr, value ->
+      message = gettext("The %{attribute} field must be a valid URL.", attribute: attr)
+
+      value
+      |> is_binary()
+      |> Kernel.and(
+        match?(
+          %URI{host: <<_::binary>>, scheme: <<_::binary>>, port: port} when is_integer(port),
+          URI.parse(value)
+        )
+      )
+      |> check(message)
+    end
+
+    &validator_fn.(&1, &2)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> import Request.Validator.Rules, only: [active_url: 0]
+  iex> fun = active_url()
+  iex> fun.("url", "https://google.com")
+  :ok
+  iex> fun.("url", "invalid_url")
+  {:error, "The url field must be a valid URL."}
+  iex> fun.("url", "https://dummy.test")
+  {:error, "The url field must be a valid URL."}
+  """
+  def active_url do
+    url_fn = url()
+
+    validator_fn = fn attr, value ->
+      message = gettext("The %{attribute} field must be a valid URL.", attribute: attr)
+
+      case url_fn.(attr, value) do
+        :ok ->
+          %URI{host: host} = URI.parse(value)
+
+          host
+          |> String.to_charlist()
+          |> :inet.gethostbyname()
+          |> then(&check(match?({:ok, _}, &1), message))
+
+        error ->
+          error
+      end
+    end
+
+    &validator_fn.(&1, &2)
+  end
+
   defp check_with_op(first, second, op, messages) do
     message =
       case messages do
