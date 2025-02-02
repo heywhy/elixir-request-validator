@@ -30,7 +30,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [required: 0]
   iex> %{validator: fun} = required()
   iex> fun.("name", "")
   {:error, "The name field is required."}
@@ -67,7 +67,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [required_if: 1]
   iex> %{validator: fun} = required_if(true)
   iex> fun.("description", "")
   {:error, "The description field is required."}
@@ -132,7 +132,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [string: 0]
   iex> fun = string()
   iex> fun.("content", "")
   :ok
@@ -159,7 +159,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [alpha: 0]
   iex> fun = alpha()
   iex> fun.("uid", "abcde")
   :ok
@@ -189,7 +189,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [alpha_num: 0]
   iex> fun = alpha_num()
   iex> fun.("ref", "1ab2de3")
   :ok
@@ -224,7 +224,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [alpha_dash: 0]
   iex> fun = alpha_dash()
   iex> fun.("username", "abcde2")
   :ok
@@ -260,7 +260,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [integer: 0]
   iex> fun = integer()
   iex> fun.("age", 1)
   :ok
@@ -289,7 +289,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [decimal: 0]
   iex> fun = decimal()
   iex> fun.("amount", 2.0)
   :ok
@@ -321,7 +321,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [numeric: 0]
   iex> fun = numeric()
   iex> fun.("width", 2.0)
   :ok
@@ -350,7 +350,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [email: 0, email: 1]
   iex> fun = email()
   iex> fun.("email", "test@gmail.com")
   :ok
@@ -391,7 +391,7 @@ defmodule Request.Validator.Rules do
   ## Examples
 
   iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [confirmed: 0, confirmed: 1]
   iex> fields = Fields.new(%{
   ...>   "password" => 12345678,
   ...>   "password_confirmation" => 12345678,
@@ -427,7 +427,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [allowed: 1]
   iex> fun = allowed(["male", "female"])
   iex> fun.("gender", "male")
   :ok
@@ -454,7 +454,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [min: 1]
   iex> fun = min([30])
   iex> fun.("age", 40)
   :ok
@@ -503,7 +503,7 @@ defmodule Request.Validator.Rules do
   @doc """
   ## Examples
 
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [max: 1]
   iex> fun = max([30])
   iex> fun.("age", 20)
   :ok
@@ -555,7 +555,7 @@ defmodule Request.Validator.Rules do
   ## Examples
 
   iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [gt: 1]
   iex> fields = Fields.new(%{
   ...>   "age" => 30,
   ...>   "items" => [0, 1],
@@ -633,7 +633,7 @@ defmodule Request.Validator.Rules do
   ## Examples
 
   iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules
+  iex> import Request.Validator.Rules, only: [lt: 1]
   iex> fields = Fields.new(%{
   ...>   "mother_age" => 30,
   ...>   "items" => [0, 1],
