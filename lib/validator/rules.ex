@@ -582,7 +582,7 @@ defmodule Request.Validator.Rules do
   iex> fun.("sub_items", [2, 3, 4], fields)
   :ok
   iex> fun.("sub_items", [1], fields)
-  {:error, "The sub_items field must be greater than 2 items."}
+  {:error, "The sub_items field must have more than 2 items."}
   iex> fun.("sub_items", "milk", fields)
   {:error, "The sub_items field must be greater than 2 characters."}
   """
@@ -600,7 +600,7 @@ defmodule Request.Validator.Rules do
             value: v
           ),
         list:
-          gettext("The %{attribute} field must be greater than %{value} items.",
+          gettext("The %{attribute} field must have more than %{value} items.",
             attribute: attr,
             value: v
           ),
@@ -660,7 +660,7 @@ defmodule Request.Validator.Rules do
   iex> fun.("sub_items", [], fields)
   :ok
   iex> fun.("sub_items", [2, 3, 4], fields)
-  {:error, "The sub_items field must be less than 2 items."}
+  {:error, "The sub_items field must have less than 2 items."}
   iex> fun.("sub_items", "milk", fields)
   {:error, "The sub_items field must be less than 2 characters."}
   """
@@ -678,7 +678,7 @@ defmodule Request.Validator.Rules do
             value: v
           ),
         list:
-          gettext("The %{attribute} field must be less than %{value} items.",
+          gettext("The %{attribute} field must have less than %{value} items.",
             attribute: attr,
             value: v
           ),
@@ -698,6 +698,162 @@ defmodule Request.Validator.Rules do
 
         same_type?(value, compared_value) ->
           check_with_op(value, compared_value, &Kernel.</2, messages)
+
+        true ->
+          {:error, messages.string}
+      end
+    end
+
+    &validator_fn.(bound, &1, &2, &3)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> alias Request.Validator.Fields
+  iex> import Request.Validator.Rules, only: [gte: 1]
+  iex> fields = Fields.new(%{
+  ...>   "age" => 30,
+  ...>   "items" => [0, 1],
+  ...>   "passphrase" => "tango"
+  ...> })
+  iex> fun = gte("age")
+  iex> fun.("mother_age", 25, fields)
+  {:error, "The mother_age field must be greater than or equal to 30."}
+  iex> fun.("mother_age", 45, fields)
+  :ok
+  iex> fun = gte(30)
+  iex> fun.("mother_age", 20, fields)
+  {:error, "The mother_age field must be greater than or equal to 30."}
+  iex> fun.("mother_age", "20", fields)
+  {:error, "The mother_age field must be greater than or equal to 30 characters."}
+  iex> fun.("mother_age", 50, fields)
+  :ok
+  iex> fun = gte("passphrase")
+  iex> fun.("passphrase_hash", "milk", fields)
+  {:error, "The passphrase_hash field must be greater than or equal to 5 characters."}
+  iex> fun.("passphrase_hash", "aHsychxUY", fields)
+  :ok
+  iex> fun = gte("items")
+  iex> fun.("sub_items", [2, 3], fields)
+  :ok
+  iex> fun.("sub_items", [1], fields)
+  {:error, "The sub_items field must have 2 items or more."}
+  iex> fun.("sub_items", "milk", fields)
+  {:error, "The sub_items field must be greater than or equal to 2 characters."}
+  """
+  def gte([bound]), do: gte(bound)
+
+  def gte(bound) when is_binary(bound) or is_number(bound) do
+    validator_fn = fn bound, attr, value, fields ->
+      compared_value = fields[bound]
+      v = get_size(compared_value) || bound
+
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must be greater than or equal to %{value}.",
+            attribute: attr,
+            value: v
+          ),
+        list:
+          gettext("The %{attribute} field must have %{value} items or more.",
+            attribute: attr,
+            value: v
+          ),
+        string:
+          gettext("The %{attribute} field must be greater than or equal to %{value} characters.",
+            attribute: attr,
+            value: v
+          )
+      }
+
+      cond do
+        is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
+          check_with_op(value, bound, &Kernel.>=/2, messages)
+
+        is_number(bound) ->
+          {:error, messages.string}
+
+        same_type?(value, compared_value) ->
+          check_with_op(value, compared_value, &Kernel.>=/2, messages)
+
+        true ->
+          {:error, messages.string}
+      end
+    end
+
+    &validator_fn.(bound, &1, &2, &3)
+  end
+
+  @doc """
+  ## Examples
+
+  iex> alias Request.Validator.Fields
+  iex> import Request.Validator.Rules, only: [lte: 1]
+  iex> fields = Fields.new(%{
+  ...>   "mother_age" => 30,
+  ...>   "items" => [0, 1],
+  ...>   "essay" => "lorem ipsum"
+  ...> })
+  iex> fun = lte("mother_age")
+  iex> fun.("child_age", 31, fields)
+  {:error, "The child_age field must be less than or equal to 30."}
+  iex> fun.("child_age", 18, fields)
+  :ok
+  iex> fun = lte(30)
+  iex> fun.("child_age", 50, fields)
+  {:error, "The child_age field must be less than or equal to 30."}
+  iex> fun.("child_age", "20", fields)
+  {:error, "The child_age field must be less than or equal to 30 characters."}
+  iex> fun.("child_age", 20, fields)
+  :ok
+  iex> fun = lte("essay")
+  iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
+  {:error, "The comment field must be less than or equal to 11 characters."}
+  iex> fun.("comment", "lorem", fields)
+  :ok
+  iex> fun = lte("items")
+  iex> fun.("sub_items", [6, 7], fields)
+  :ok
+  iex> fun.("sub_items", [2, 3, 4], fields)
+  {:error, "The sub_items field must not have more than 2 items."}
+  iex> fun.("sub_items", "milk", fields)
+  {:error, "The sub_items field must be less than or equal to 2 characters."}
+  """
+  def lte([bound]), do: lte(bound)
+
+  def lte(bound) when is_binary(bound) or is_number(bound) do
+    validator_fn = fn bound, attr, value, fields ->
+      compared_value = fields[bound]
+      v = get_size(compared_value) || bound
+
+      messages = %{
+        numeric:
+          gettext("The %{attribute} field must be less than or equal to %{value}.",
+            attribute: attr,
+            value: v
+          ),
+        list:
+          gettext("The %{attribute} field must not have more than %{value} items.",
+            attribute: attr,
+            value: v
+          ),
+        string:
+          gettext("The %{attribute} field must be less than or equal to %{value} characters.",
+            attribute: attr,
+            value: v
+          )
+      }
+
+      cond do
+        is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
+          check_with_op(value, bound, &Kernel.<=/2, messages)
+
+        is_number(bound) ->
+          {:error, messages.string}
+
+        same_type?(value, compared_value) ->
+          check_with_op(value, compared_value, &Kernel.<=/2, messages)
 
         true ->
           {:error, messages.string}

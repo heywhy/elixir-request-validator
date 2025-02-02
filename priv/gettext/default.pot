@@ -121,12 +121,42 @@ msgstr ""
 msgid "The %{attribute} field must be less than %{value}."
 msgstr ""
 
-#: lib/validator/rules.ex:603
+#: lib/validator/rules.ex:754
 #, elixir-autogen, elixir-format
-msgid "The %{attribute} field must be greater than %{value} items."
+msgid "The %{attribute} field must be greater than or equal to %{value}."
 msgstr ""
 
 #: lib/validator/rules.ex:681
 #, elixir-autogen, elixir-format
-msgid "The %{attribute} field must be less than %{value} items."
+msgid "The %{attribute} field must have less than %{value} items."
+msgstr ""
+
+#: lib/validator/rules.ex:603
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must have more than %{value} items."
+msgstr ""
+
+#: lib/validator/rules.ex:759
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must have %{value} items or more."
+msgstr ""
+
+#: lib/validator/rules.ex:764
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be greater than or equal to %{value} characters."
+msgstr ""
+
+#: lib/validator/rules.ex:832
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be less than or equal to %{value}."
+msgstr ""
+
+#: lib/validator/rules.ex:837
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must not have more than %{value} items."
+msgstr ""
+
+#: lib/validator/rules.ex:842
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be less than or equal to %{value} characters."
 msgstr ""
