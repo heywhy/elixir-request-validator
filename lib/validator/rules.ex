@@ -494,7 +494,7 @@ defmodule Request.Validator.Rules do
           )
       }
 
-      check_with_op(value, bound, &Kernel.>=/2, messages)
+      check_size_with_op(value, bound, &Kernel.>=/2, messages)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -545,7 +545,7 @@ defmodule Request.Validator.Rules do
           )
       }
 
-      check_with_op(value, bound, &Kernel.<=/2, messages)
+      check_size_with_op(value, bound, &Kernel.<=/2, messages)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -613,13 +613,13 @@ defmodule Request.Validator.Rules do
 
       cond do
         is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
-          check_with_op(value, bound, &Kernel.>/2, messages)
+          check_size_with_op(value, bound, &Kernel.>/2, messages)
 
         is_number(bound) ->
           {:error, messages.string}
 
         same_type?(value, compared_value) ->
-          check_with_op(value, compared_value, &Kernel.>/2, messages)
+          check_size_with_op(value, compared_value, &Kernel.>/2, messages)
 
         true ->
           {:error, messages.string}
@@ -691,13 +691,13 @@ defmodule Request.Validator.Rules do
 
       cond do
         is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
-          check_with_op(value, bound, &Kernel.</2, messages)
+          check_size_with_op(value, bound, &Kernel.</2, messages)
 
         is_number(bound) ->
           {:error, messages.string}
 
         same_type?(value, compared_value) ->
-          check_with_op(value, compared_value, &Kernel.</2, messages)
+          check_size_with_op(value, compared_value, &Kernel.</2, messages)
 
         true ->
           {:error, messages.string}
@@ -769,13 +769,13 @@ defmodule Request.Validator.Rules do
 
       cond do
         is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
-          check_with_op(value, bound, &Kernel.>=/2, messages)
+          check_size_with_op(value, bound, &Kernel.>=/2, messages)
 
         is_number(bound) ->
           {:error, messages.string}
 
         same_type?(value, compared_value) ->
-          check_with_op(value, compared_value, &Kernel.>=/2, messages)
+          check_size_with_op(value, compared_value, &Kernel.>=/2, messages)
 
         true ->
           {:error, messages.string}
@@ -847,13 +847,13 @@ defmodule Request.Validator.Rules do
 
       cond do
         is_nil(compared_value) and (is_number(value) and is_number(bound)) ->
-          check_with_op(value, bound, &Kernel.<=/2, messages)
+          check_size_with_op(value, bound, &Kernel.<=/2, messages)
 
         is_number(bound) ->
           {:error, messages.string}
 
         same_type?(value, compared_value) ->
-          check_with_op(value, compared_value, &Kernel.<=/2, messages)
+          check_size_with_op(value, compared_value, &Kernel.<=/2, messages)
 
         true ->
           {:error, messages.string}
@@ -900,7 +900,7 @@ defmodule Request.Validator.Rules do
           )
       }
 
-      check_with_op(value, bound, &Kernel.==/2, messages)
+      check_size_with_op(value, bound, &Kernel.==/2, messages)
     end
 
     &validator_fn.(bound, &1, &2)
@@ -1043,7 +1043,7 @@ defmodule Request.Validator.Rules do
     |> Enum.empty?()
   end
 
-  defp check_with_op(first, second, op, messages) do
+  defp check_size_with_op(first, second, op, messages) do
     message =
       case messages do
         %{} -> messages[get_type(first)]
