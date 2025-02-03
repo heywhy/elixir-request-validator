@@ -191,3 +191,8 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "The %{attribute} field must be a map."
 msgstr ""
+
+#: lib/validator/rules.ex:1032
+#, elixir-autogen, elixir-format
+msgid "The %{attribute} field must be true or false."
+msgstr ""
