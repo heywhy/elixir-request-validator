@@ -30,7 +30,7 @@ defmodule RequestValidatorTest.RegisterRequest do
   end
 
   @impl Request.Validator
-  def authorize(_), do: true
+  def authorize?(_), do: true
 
   def unique_email?("test@gmail.com", _opts), do: true
   def unique_email?(_val, _opts), do: false

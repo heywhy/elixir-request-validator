@@ -18,7 +18,7 @@ defmodule Request.Validator do
   end
   ```
   """
-  @callback authorize(Plug.Conn.t()) :: boolean()
+  @callback authorize?(Plug.Conn.t()) :: boolean()
 
   @spec validate(module(), map() | keyword(), keyword()) :: validation_result()
   def validate(module, params, opts \\ []) do
@@ -130,8 +130,8 @@ defmodule Request.Validator do
     mod = __CALLER__.module
 
     quote bind_quoted: [mod: mod] do
-      if not Module.defines?(mod, {:authorize, 1}) do
-        def authorize(_), do: true
+      if not Module.defines?(mod, {:authorize?, 1}) do
+        def authorize?(_), do: true
       end
     end
   end
