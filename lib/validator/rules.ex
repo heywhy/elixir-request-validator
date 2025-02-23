@@ -27,25 +27,25 @@ defmodule Request.Validator.Rules do
     end
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [required: 0]
-  iex> %{validator: fun} = required()
-  iex> fun.("name", "")
-  {:error, "The name field is required."}
-  iex> fun.("gender", nil)
-  {:error, "The gender field is required."}
-  iex> fun.("coordinates", [])
-  {:error, "The coordinates field is required."}
-  iex> fun.("metadata", %{})
-  {:error, "The metadata field is required."}
-  iex> fun.("message", "hello world")
-  :ok
-  iex> fun.("products", [1, 2])
-  :ok
-  iex> fun.("metadata", %{"hello" => "world"})
-  :ok
+      iex> import Request.Validator.Rules, only: [required: 0]
+      iex> %{validator: fun} = required()
+      iex> fun.("name", "")
+      {:error, "The name field is required."}
+      iex> fun.("gender", nil)
+      {:error, "The gender field is required."}
+      iex> fun.("coordinates", [])
+      {:error, "The coordinates field is required."}
+      iex> fun.("metadata", %{})
+      {:error, "The metadata field is required."}
+      iex> fun.("message", "hello world")
+      :ok
+      iex> fun.("products", [1, 2])
+      :ok
+      iex> fun.("metadata", %{"hello" => "world"})
+      :ok
   """
   @spec required() :: rule()
   def required do
@@ -64,24 +64,24 @@ defmodule Request.Validator.Rules do
     %{implicit?: true, validator: validator_fn}
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [required_if: 1]
-  iex> %{validator: fun} = required_if(true)
-  iex> fun.("description", "")
-  {:error, "The description field is required."}
-  iex> fun.("age", nil)
-  {:error, "The age field is required."}
-  iex> %{validator: fun} = required_if(fn -> false end)
-  iex> fun.("key", "")
-  :ok
-  iex> fun.("state", nil)
-  :ok
-  iex> %{validator: fun} = required_if(["passenger", "kid"])
-  iex> data = %{"passenger" => "kid"}
-  iex> fun.("parent", nil, data)
-  {:error, "The parent field is required when passenger is kid."}
+      iex> import Request.Validator.Rules, only: [required_if: 1]
+      iex> %{validator: fun} = required_if(true)
+      iex> fun.("description", "")
+      {:error, "The description field is required."}
+      iex> fun.("age", nil)
+      {:error, "The age field is required."}
+      iex> %{validator: fun} = required_if(fn -> false end)
+      iex> fun.("key", "")
+      :ok
+      iex> fun.("state", nil)
+      :ok
+      iex> %{validator: fun} = required_if(["passenger", "kid"])
+      iex> data = %{"passenger" => "kid"}
+      iex> fun.("parent", nil, data)
+      {:error, "The parent field is required when passenger is kid."}
   """
   @spec required_if((... -> boolean()) | boolean() | [term()]) :: rule()
   def required_if(condition) when is_function(condition) or is_boolean(condition) do
@@ -129,21 +129,21 @@ defmodule Request.Validator.Rules do
     }
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [string: 0]
-  iex> fun = string()
-  iex> fun.("content", "")
-  :ok
-  iex> fun.("content", 1)
-  {:error, "The content field must be a string."}
-  iex> fun.("content", nil)
-  {:error, "The content field must be a string."}
-  iex> fun.("content", %{})
-  {:error, "The content field must be a string."}
-  iex> fun.("content", [])
-  {:error, "The content field must be a string."}
+      iex> import Request.Validator.Rules, only: [string: 0]
+      iex> fun = string()
+      iex> fun.("content", "")
+      :ok
+      iex> fun.("content", 1)
+      {:error, "The content field must be a string."}
+      iex> fun.("content", nil)
+      {:error, "The content field must be a string."}
+      iex> fun.("content", %{})
+      {:error, "The content field must be a string."}
+      iex> fun.("content", [])
+      {:error, "The content field must be a string."}
   """
   @spec string() :: rule()
   def string do
@@ -156,21 +156,21 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [alpha: 0]
-  iex> fun = alpha()
-  iex> fun.("uid", "abcde")
-  :ok
-  iex> fun.("uid", 1)
-  {:error, "The uid field must only contain letters."}
-  iex> fun.("uid", nil)
-  {:error, "The uid field must only contain letters."}
-  iex> fun.("uid", %{})
-  {:error, "The uid field must only contain letters."}
-  iex> fun.("uid", [])
-  {:error, "The uid field must only contain letters."}
+      iex> import Request.Validator.Rules, only: [alpha: 0]
+      iex> fun = alpha()
+      iex> fun.("uid", "abcde")
+      :ok
+      iex> fun.("uid", 1)
+      {:error, "The uid field must only contain letters."}
+      iex> fun.("uid", nil)
+      {:error, "The uid field must only contain letters."}
+      iex> fun.("uid", %{})
+      {:error, "The uid field must only contain letters."}
+      iex> fun.("uid", [])
+      {:error, "The uid field must only contain letters."}
   """
   @spec alpha() :: rule()
   def alpha do
@@ -186,23 +186,23 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [alpha_num: 0]
-  iex> fun = alpha_num()
-  iex> fun.("ref", "1ab2de3")
-  :ok
-  iex> fun.("ref", 1)
-  {:error, "The ref field must only contain letters and numbers."}
-  iex> fun.("ref", "abc_de2")
-  {:error, "The ref field must only contain letters and numbers."}
-  iex> fun.("ref", nil)
-  {:error, "The ref field must only contain letters and numbers."}
-  iex> fun.("ref", %{})
-  {:error, "The ref field must only contain letters and numbers."}
-  iex> fun.("ref", [])
-  {:error, "The ref field must only contain letters and numbers."}
+      iex> import Request.Validator.Rules, only: [alpha_num: 0]
+      iex> fun = alpha_num()
+      iex> fun.("ref", "1ab2de3")
+      :ok
+      iex> fun.("ref", 1)
+      {:error, "The ref field must only contain letters and numbers."}
+      iex> fun.("ref", "abc_de2")
+      {:error, "The ref field must only contain letters and numbers."}
+      iex> fun.("ref", nil)
+      {:error, "The ref field must only contain letters and numbers."}
+      iex> fun.("ref", %{})
+      {:error, "The ref field must only contain letters and numbers."}
+      iex> fun.("ref", [])
+      {:error, "The ref field must only contain letters and numbers."}
   """
   @spec alpha_num() :: rule()
   def alpha_num do
@@ -221,23 +221,23 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [alpha_dash: 0]
-  iex> fun = alpha_dash()
-  iex> fun.("username", "abcde2")
-  :ok
-  iex> fun.("username", "ab_d-2")
-  :ok
-  iex> fun.("username", 1)
-  {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
-  iex> fun.("username", nil)
-  {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
-  iex> fun.("username", %{})
-  {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
-  iex> fun.("username", [])
-  {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
+      iex> import Request.Validator.Rules, only: [alpha_dash: 0]
+      iex> fun = alpha_dash()
+      iex> fun.("username", "abcde2")
+      :ok
+      iex> fun.("username", "ab_d-2")
+      :ok
+      iex> fun.("username", 1)
+      {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
+      iex> fun.("username", nil)
+      {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
+      iex> fun.("username", %{})
+      {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
+      iex> fun.("username", [])
+      {:error, "The username field must only contain letters, numbers, dashes, and underscores."}
   """
   @spec alpha_dash() :: rule()
   def alpha_dash do
@@ -257,23 +257,23 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [integer: 0]
-  iex> fun = integer()
-  iex> fun.("age", 1)
-  :ok
-  iex> fun.("age", 2.0)
-  {:error, "The age field must be an integer."}
-  iex> fun.("age", "abcde2")
-  {:error, "The age field must be an integer."}
-  iex> fun.("age", nil)
-  {:error, "The age field must be an integer."}
-  iex> fun.("age", %{})
-  {:error, "The age field must be an integer."}
-  iex> fun.("age", [])
-  {:error, "The age field must be an integer."}
+      iex> import Request.Validator.Rules, only: [integer: 0]
+      iex> fun = integer()
+      iex> fun.("age", 1)
+      :ok
+      iex> fun.("age", 2.0)
+      {:error, "The age field must be an integer."}
+      iex> fun.("age", "abcde2")
+      {:error, "The age field must be an integer."}
+      iex> fun.("age", nil)
+      {:error, "The age field must be an integer."}
+      iex> fun.("age", %{})
+      {:error, "The age field must be an integer."}
+      iex> fun.("age", [])
+      {:error, "The age field must be an integer."}
   """
   @spec integer() :: rule()
   def integer do
@@ -286,25 +286,25 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [decimal: 0]
-  iex> fun = decimal()
-  iex> fun.("amount", 2.0)
-  :ok
-  iex> fun.("amount", Decimal.new("9.999"))
-  :ok
-  iex> fun.("amount", 1)
-  {:error, "The amount field must be a decimal."}
-  iex> fun.("amount", "abcde2")
-  {:error, "The amount field must be a decimal."}
-  iex> fun.("amount", nil)
-  {:error, "The amount field must be a decimal."}
-  iex> fun.("amount", %{})
-  {:error, "The amount field must be a decimal."}
-  iex> fun.("amount", [])
-  {:error, "The amount field must be a decimal."}
+      iex> import Request.Validator.Rules, only: [decimal: 0]
+      iex> fun = decimal()
+      iex> fun.("amount", 2.0)
+      :ok
+      iex> fun.("amount", Decimal.new("9.999"))
+      :ok
+      iex> fun.("amount", 1)
+      {:error, "The amount field must be a decimal."}
+      iex> fun.("amount", "abcde2")
+      {:error, "The amount field must be a decimal."}
+      iex> fun.("amount", nil)
+      {:error, "The amount field must be a decimal."}
+      iex> fun.("amount", %{})
+      {:error, "The amount field must be a decimal."}
+      iex> fun.("amount", [])
+      {:error, "The amount field must be a decimal."}
   """
   @spec decimal() :: rule()
   def decimal do
@@ -318,23 +318,23 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [numeric: 0]
-  iex> fun = numeric()
-  iex> fun.("width", 2.0)
-  :ok
-  iex> fun.("width", 1)
-  :ok
-  iex> fun.("width", "abcde2")
-  {:error, "The width field must be a number."}
-  iex> fun.("width", nil)
-  {:error, "The width field must be a number."}
-  iex> fun.("width", %{})
-  {:error, "The width field must be a number."}
-  iex> fun.("width", [])
-  {:error, "The width field must be a number."}
+      iex> import Request.Validator.Rules, only: [numeric: 0]
+      iex> fun = numeric()
+      iex> fun.("width", 2.0)
+      :ok
+      iex> fun.("width", 1)
+      :ok
+      iex> fun.("width", "abcde2")
+      {:error, "The width field must be a number."}
+      iex> fun.("width", nil)
+      {:error, "The width field must be a number."}
+      iex> fun.("width", %{})
+      {:error, "The width field must be a number."}
+      iex> fun.("width", [])
+      {:error, "The width field must be a number."}
   """
   @spec numeric() :: rule()
   def numeric do
@@ -347,27 +347,27 @@ defmodule Request.Validator.Rules do
     &validator_fn.(&1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [email: 0, email: 1]
-  iex> fun = email()
-  iex> fun.("email", "test@gmail.com")
-  :ok
-  iex> fun = email([:format])
-  iex> fun.("email", "a@b.com")
-  :ok
-  iex> fun = email(["mx"])
-  iex> fun.("email", "a@b.com")
-  {:error, "The email field must be a valid email address."}
-  iex> fun.("email", 2.0)
-  {:error, "The email field must be a valid email address."}
-  iex> fun.("email", nil)
-  {:error, "The email field must be a valid email address."}
-  iex> fun.("email", %{})
-  {:error, "The email field must be a valid email address."}
-  iex> fun.("email", [])
-  {:error, "The email field must be a valid email address."}
+      iex> import Request.Validator.Rules, only: [email: 0, email: 1]
+      iex> fun = email()
+      iex> fun.("email", "test@gmail.com")
+      :ok
+      iex> fun = email([:format])
+      iex> fun.("email", "a@b.com")
+      :ok
+      iex> fun = email(["mx"])
+      iex> fun.("email", "a@b.com")
+      {:error, "The email field must be a valid email address."}
+      iex> fun.("email", 2.0)
+      {:error, "The email field must be a valid email address."}
+      iex> fun.("email", nil)
+      {:error, "The email field must be a valid email address."}
+      iex> fun.("email", %{})
+      {:error, "The email field must be a valid email address."}
+      iex> fun.("email", [])
+      {:error, "The email field must be a valid email address."}
   """
   @email_checks %{format: Format, mx: MX}
   @spec email([:format | :mx | String.t()]) :: rule()
@@ -387,25 +387,25 @@ defmodule Request.Validator.Rules do
     &validator_fn.(validations, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules, only: [confirmed: 0, confirmed: 1]
-  iex> fields = Fields.new(%{
-  ...>   "password" => 12345678,
-  ...>   "password_confirmation" => 12345678,
-  ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
-  ...> })
-  iex> fun = confirmed()
-  iex> fun.("password", 12345678, fields)
-  :ok
-  iex> fun.("list.0.a", 1, fields)
-  :ok
-  iex> fun.("password", "yikes!", fields)
-  {:error, "The password field confirmation does not match."}
-  iex> fun.("list.0.a", 10, fields)
-  {:error, "The list.0.a field confirmation does not match."}
+      iex> alias Request.Validator.Fields
+      iex> import Request.Validator.Rules, only: [confirmed: 0, confirmed: 1]
+      iex> fields = Fields.new(%{
+      ...>   "password" => 12345678,
+      ...>   "password_confirmation" => 12345678,
+      ...>   "list" => [%{"a" => 1, "a_confirmation" => 1}]
+      ...> })
+      iex> fun = confirmed()
+      iex> fun.("password", 12345678, fields)
+      :ok
+      iex> fun.("list.0.a", 1, fields)
+      :ok
+      iex> fun.("password", "yikes!", fields)
+      {:error, "The password field confirmation does not match."}
+      iex> fun.("list.0.a", 10, fields)
+      {:error, "The list.0.a field confirmation does not match."}
   """
   @spec confirmed(nil | String.t()) :: rule()
   def confirmed(confirmation \\ nil) do
@@ -424,19 +424,19 @@ defmodule Request.Validator.Rules do
     &validator_fn.(confirmation, &1, &2, &3)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [allowed: 1]
-  iex> fun = allowed(["male", "female"])
-  iex> fun.("gender", "male")
-  :ok
-  iex> fun.("gender", "female")
-  :ok
-  iex> fun.("gender", "child")
-  {:error, "The selected gender is invalid."}
-  iex> fun.("gender", "goat")
-  {:error, "The selected gender is invalid."}
+      iex> import Request.Validator.Rules, only: [allowed: 1]
+      iex> fun = allowed(["male", "female"])
+      iex> fun.("gender", "male")
+      :ok
+      iex> fun.("gender", "female")
+      :ok
+      iex> fun.("gender", "child")
+      {:error, "The selected gender is invalid."}
+      iex> fun.("gender", "goat")
+      {:error, "The selected gender is invalid."}
   """
   @spec allowed([term()]) :: rule()
   def allowed(options) when is_list(options) do
@@ -451,25 +451,25 @@ defmodule Request.Validator.Rules do
     &validator_fn.(options, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [min: 1]
-  iex> fun = min([30])
-  iex> fun.("age", 40)
-  :ok
-  iex> fun.("age", 10)
-  {:error, "The age field must be at least 30."}
-  iex> fun = min(6)
-  iex> fun.("password", "pass")
-  {:error, "The password field must be at least 6 characters."}
-  iex> fun.("password", "password")
-  :ok
-  iex> fun = min(1)
-  iex> fun.("tags", [])
-  {:error, "The tags field must be at least 1 items."}
-  iex> fun.("tags", [1, 3])
-  :ok
+      iex> import Request.Validator.Rules, only: [min: 1]
+      iex> fun = min([30])
+      iex> fun.("age", 40)
+      :ok
+      iex> fun.("age", 10)
+      {:error, "The age field must be at least 30."}
+      iex> fun = min(6)
+      iex> fun.("password", "pass")
+      {:error, "The password field must be at least 6 characters."}
+      iex> fun.("password", "password")
+      :ok
+      iex> fun = min(1)
+      iex> fun.("tags", [])
+      {:error, "The tags field must be at least 1 items."}
+      iex> fun.("tags", [1, 3])
+      :ok
   """
   def min([bound]), do: min(bound)
 
@@ -500,27 +500,27 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [max: 1]
-  iex> fun = max([30])
-  iex> fun.("age", 20)
-  :ok
-  iex> fun.("age", 30)
-  :ok
-  iex> fun.("age", 40)
-  {:error, "The age field must not be greater than 30."}
-  iex> fun = max(6)
-  iex> fun.("otp", "1611675")
-  {:error, "The otp field must not be greater than 6 characters."}
-  iex> fun.("otp", "955764")
-  :ok
-  iex> fun = max(2)
-  iex> fun.("tags", [1, 2, 3])
-  {:error, "The tags field must not be greater than 2 items."}
-  iex> fun.("tags", [1, 3])
-  :ok
+      iex> import Request.Validator.Rules, only: [max: 1]
+      iex> fun = max([30])
+      iex> fun.("age", 20)
+      :ok
+      iex> fun.("age", 30)
+      :ok
+      iex> fun.("age", 40)
+      {:error, "The age field must not be greater than 30."}
+      iex> fun = max(6)
+      iex> fun.("otp", "1611675")
+      {:error, "The otp field must not be greater than 6 characters."}
+      iex> fun.("otp", "955764")
+      :ok
+      iex> fun = max(2)
+      iex> fun.("tags", [1, 2, 3])
+      {:error, "The tags field must not be greater than 2 items."}
+      iex> fun.("tags", [1, 3])
+      :ok
   """
   def max([bound]), do: max(bound)
 
@@ -551,40 +551,40 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules, only: [gt: 1]
-  iex> fields = Fields.new(%{
-  ...>   "age" => 30,
-  ...>   "items" => [0, 1],
-  ...>   "passphrase" => "tango"
-  ...> })
-  iex> fun = gt("age")
-  iex> fun.("mother_age", 25, fields)
-  {:error, "The mother_age field must be greater than 30."}
-  iex> fun.("mother_age", 45, fields)
-  :ok
-  iex> fun = gt(30)
-  iex> fun.("mother_age", 20, fields)
-  {:error, "The mother_age field must be greater than 30."}
-  iex> fun.("mother_age", "20", fields)
-  {:error, "The mother_age field must be greater than 30 characters."}
-  iex> fun.("mother_age", 50, fields)
-  :ok
-  iex> fun = gt("passphrase")
-  iex> fun.("passphrase_hash", "milk", fields)
-  {:error, "The passphrase_hash field must be greater than 5 characters."}
-  iex> fun.("passphrase_hash", "aHsychxUY", fields)
-  :ok
-  iex> fun = gt("items")
-  iex> fun.("sub_items", [2, 3, 4], fields)
-  :ok
-  iex> fun.("sub_items", [1], fields)
-  {:error, "The sub_items field must have more than 2 items."}
-  iex> fun.("sub_items", "milk", fields)
-  {:error, "The sub_items field must be greater than 2 characters."}
+      iex> alias Request.Validator.Fields
+      iex> import Request.Validator.Rules, only: [gt: 1]
+      iex> fields = Fields.new(%{
+      ...>   "age" => 30,
+      ...>   "items" => [0, 1],
+      ...>   "passphrase" => "tango"
+      ...> })
+      iex> fun = gt("age")
+      iex> fun.("mother_age", 25, fields)
+      {:error, "The mother_age field must be greater than 30."}
+      iex> fun.("mother_age", 45, fields)
+      :ok
+      iex> fun = gt(30)
+      iex> fun.("mother_age", 20, fields)
+      {:error, "The mother_age field must be greater than 30."}
+      iex> fun.("mother_age", "20", fields)
+      {:error, "The mother_age field must be greater than 30 characters."}
+      iex> fun.("mother_age", 50, fields)
+      :ok
+      iex> fun = gt("passphrase")
+      iex> fun.("passphrase_hash", "milk", fields)
+      {:error, "The passphrase_hash field must be greater than 5 characters."}
+      iex> fun.("passphrase_hash", "aHsychxUY", fields)
+      :ok
+      iex> fun = gt("items")
+      iex> fun.("sub_items", [2, 3, 4], fields)
+      :ok
+      iex> fun.("sub_items", [1], fields)
+      {:error, "The sub_items field must have more than 2 items."}
+      iex> fun.("sub_items", "milk", fields)
+      {:error, "The sub_items field must be greater than 2 characters."}
   """
   def gt([bound]), do: gt(bound)
 
@@ -629,40 +629,40 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2, &3)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules, only: [lt: 1]
-  iex> fields = Fields.new(%{
-  ...>   "mother_age" => 30,
-  ...>   "items" => [0, 1],
-  ...>   "essay" => "lorem ipsum"
-  ...> })
-  iex> fun = lt("mother_age")
-  iex> fun.("child_age", 30, fields)
-  {:error, "The child_age field must be less than 30."}
-  iex> fun.("child_age", 18, fields)
-  :ok
-  iex> fun = lt(30)
-  iex> fun.("child_age", 50, fields)
-  {:error, "The child_age field must be less than 30."}
-  iex> fun.("child_age", "20", fields)
-  {:error, "The child_age field must be less than 30 characters."}
-  iex> fun.("child_age", 20, fields)
-  :ok
-  iex> fun = lt("essay")
-  iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
-  {:error, "The comment field must be less than 11 characters."}
-  iex> fun.("comment", "lorem", fields)
-  :ok
-  iex> fun = lt("items")
-  iex> fun.("sub_items", [], fields)
-  :ok
-  iex> fun.("sub_items", [2, 3, 4], fields)
-  {:error, "The sub_items field must have less than 2 items."}
-  iex> fun.("sub_items", "milk", fields)
-  {:error, "The sub_items field must be less than 2 characters."}
+      iex> alias Request.Validator.Fields
+      iex> import Request.Validator.Rules, only: [lt: 1]
+      iex> fields = Fields.new(%{
+      ...>   "mother_age" => 30,
+      ...>   "items" => [0, 1],
+      ...>   "essay" => "lorem ipsum"
+      ...> })
+      iex> fun = lt("mother_age")
+      iex> fun.("child_age", 30, fields)
+      {:error, "The child_age field must be less than 30."}
+      iex> fun.("child_age", 18, fields)
+      :ok
+      iex> fun = lt(30)
+      iex> fun.("child_age", 50, fields)
+      {:error, "The child_age field must be less than 30."}
+      iex> fun.("child_age", "20", fields)
+      {:error, "The child_age field must be less than 30 characters."}
+      iex> fun.("child_age", 20, fields)
+      :ok
+      iex> fun = lt("essay")
+      iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
+      {:error, "The comment field must be less than 11 characters."}
+      iex> fun.("comment", "lorem", fields)
+      :ok
+      iex> fun = lt("items")
+      iex> fun.("sub_items", [], fields)
+      :ok
+      iex> fun.("sub_items", [2, 3, 4], fields)
+      {:error, "The sub_items field must have less than 2 items."}
+      iex> fun.("sub_items", "milk", fields)
+      {:error, "The sub_items field must be less than 2 characters."}
   """
   def lt([bound]), do: lt(bound)
 
@@ -707,40 +707,40 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2, &3)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules, only: [gte: 1]
-  iex> fields = Fields.new(%{
-  ...>   "age" => 30,
-  ...>   "items" => [0, 1],
-  ...>   "passphrase" => "tango"
-  ...> })
-  iex> fun = gte("age")
-  iex> fun.("mother_age", 25, fields)
-  {:error, "The mother_age field must be greater than or equal to 30."}
-  iex> fun.("mother_age", 45, fields)
-  :ok
-  iex> fun = gte(30)
-  iex> fun.("mother_age", 20, fields)
-  {:error, "The mother_age field must be greater than or equal to 30."}
-  iex> fun.("mother_age", "20", fields)
-  {:error, "The mother_age field must be greater than or equal to 30 characters."}
-  iex> fun.("mother_age", 50, fields)
-  :ok
-  iex> fun = gte("passphrase")
-  iex> fun.("passphrase_hash", "milk", fields)
-  {:error, "The passphrase_hash field must be greater than or equal to 5 characters."}
-  iex> fun.("passphrase_hash", "aHsychxUY", fields)
-  :ok
-  iex> fun = gte("items")
-  iex> fun.("sub_items", [2, 3], fields)
-  :ok
-  iex> fun.("sub_items", [1], fields)
-  {:error, "The sub_items field must have 2 items or more."}
-  iex> fun.("sub_items", "milk", fields)
-  {:error, "The sub_items field must be greater than or equal to 2 characters."}
+      iex> alias Request.Validator.Fields
+      iex> import Request.Validator.Rules, only: [gte: 1]
+      iex> fields = Fields.new(%{
+      ...>   "age" => 30,
+      ...>   "items" => [0, 1],
+      ...>   "passphrase" => "tango"
+      ...> })
+      iex> fun = gte("age")
+      iex> fun.("mother_age", 25, fields)
+      {:error, "The mother_age field must be greater than or equal to 30."}
+      iex> fun.("mother_age", 45, fields)
+      :ok
+      iex> fun = gte(30)
+      iex> fun.("mother_age", 20, fields)
+      {:error, "The mother_age field must be greater than or equal to 30."}
+      iex> fun.("mother_age", "20", fields)
+      {:error, "The mother_age field must be greater than or equal to 30 characters."}
+      iex> fun.("mother_age", 50, fields)
+      :ok
+      iex> fun = gte("passphrase")
+      iex> fun.("passphrase_hash", "milk", fields)
+      {:error, "The passphrase_hash field must be greater than or equal to 5 characters."}
+      iex> fun.("passphrase_hash", "aHsychxUY", fields)
+      :ok
+      iex> fun = gte("items")
+      iex> fun.("sub_items", [2, 3], fields)
+      :ok
+      iex> fun.("sub_items", [1], fields)
+      {:error, "The sub_items field must have 2 items or more."}
+      iex> fun.("sub_items", "milk", fields)
+      {:error, "The sub_items field must be greater than or equal to 2 characters."}
   """
   def gte([bound]), do: gte(bound)
 
@@ -785,40 +785,40 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2, &3)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> alias Request.Validator.Fields
-  iex> import Request.Validator.Rules, only: [lte: 1]
-  iex> fields = Fields.new(%{
-  ...>   "mother_age" => 30,
-  ...>   "items" => [0, 1],
-  ...>   "essay" => "lorem ipsum"
-  ...> })
-  iex> fun = lte("mother_age")
-  iex> fun.("child_age", 31, fields)
-  {:error, "The child_age field must be less than or equal to 30."}
-  iex> fun.("child_age", 18, fields)
-  :ok
-  iex> fun = lte(30)
-  iex> fun.("child_age", 50, fields)
-  {:error, "The child_age field must be less than or equal to 30."}
-  iex> fun.("child_age", "20", fields)
-  {:error, "The child_age field must be less than or equal to 30 characters."}
-  iex> fun.("child_age", 20, fields)
-  :ok
-  iex> fun = lte("essay")
-  iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
-  {:error, "The comment field must be less than or equal to 11 characters."}
-  iex> fun.("comment", "lorem", fields)
-  :ok
-  iex> fun = lte("items")
-  iex> fun.("sub_items", [6, 7], fields)
-  :ok
-  iex> fun.("sub_items", [2, 3, 4], fields)
-  {:error, "The sub_items field must not have more than 2 items."}
-  iex> fun.("sub_items", "milk", fields)
-  {:error, "The sub_items field must be less than or equal to 2 characters."}
+      iex> alias Request.Validator.Fields
+      iex> import Request.Validator.Rules, only: [lte: 1]
+      iex> fields = Fields.new(%{
+      ...>   "mother_age" => 30,
+      ...>   "items" => [0, 1],
+      ...>   "essay" => "lorem ipsum"
+      ...> })
+      iex> fun = lte("mother_age")
+      iex> fun.("child_age", 31, fields)
+      {:error, "The child_age field must be less than or equal to 30."}
+      iex> fun.("child_age", 18, fields)
+      :ok
+      iex> fun = lte(30)
+      iex> fun.("child_age", 50, fields)
+      {:error, "The child_age field must be less than or equal to 30."}
+      iex> fun.("child_age", "20", fields)
+      {:error, "The child_age field must be less than or equal to 30 characters."}
+      iex> fun.("child_age", 20, fields)
+      :ok
+      iex> fun = lte("essay")
+      iex> fun.("comment", "lorem ipsum dolor sit amet", fields)
+      {:error, "The comment field must be less than or equal to 11 characters."}
+      iex> fun.("comment", "lorem", fields)
+      :ok
+      iex> fun = lte("items")
+      iex> fun.("sub_items", [6, 7], fields)
+      :ok
+      iex> fun.("sub_items", [2, 3, 4], fields)
+      {:error, "The sub_items field must not have more than 2 items."}
+      iex> fun.("sub_items", "milk", fields)
+      {:error, "The sub_items field must be less than or equal to 2 characters."}
   """
   def lte([bound]), do: lte(bound)
 
@@ -863,23 +863,23 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2, &3)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [size: 1]
-  iex> fun = size(5)
-  iex> fun.("age", 10)
-  {:error, "The age field must be 5."}
-  iex> fun.("age", 5)
-  :ok
-  iex> fun.("username", "chic")
-  {:error, "The username field must be 5 characters."}
-  iex> fun.("username", "chick")
-  :ok
-  iex> fun.("tags", ["chic"])
-  {:error, "The tags field must contain 5 items."}
-  iex> fun.("tags", Enum.to_list(1..5))
-  :ok
+      iex> import Request.Validator.Rules, only: [size: 1]
+      iex> fun = size(5)
+      iex> fun.("age", 10)
+      {:error, "The age field must be 5."}
+      iex> fun.("age", 5)
+      :ok
+      iex> fun.("username", "chic")
+      {:error, "The username field must be 5 characters."}
+      iex> fun.("username", "chick")
+      :ok
+      iex> fun.("tags", ["chic"])
+      {:error, "The tags field must contain 5 items."}
+      iex> fun.("tags", Enum.to_list(1..5))
+      :ok
   """
   def size([bound]), do: size(bound)
 
@@ -906,15 +906,15 @@ defmodule Request.Validator.Rules do
     &validator_fn.(bound, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [url: 0]
-  iex> fun = url()
-  iex> fun.("url", "https://google.com")
-  :ok
-  iex> fun.("url", "invalid_url")
-  {:error, "The url field must be a valid URL."}
+      iex> import Request.Validator.Rules, only: [url: 0]
+      iex> fun = url()
+      iex> fun.("url", "https://google.com")
+      :ok
+      iex> fun.("url", "invalid_url")
+      {:error, "The url field must be a valid URL."}
   """
   def url do
     fn attr, value ->
@@ -932,17 +932,17 @@ defmodule Request.Validator.Rules do
     end
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [active_url: 0]
-  iex> fun = active_url()
-  iex> fun.("url", "https://google.com")
-  :ok
-  iex> fun.("url", "invalid_url")
-  {:error, "The url field must be a valid URL."}
-  iex> fun.("url", "https://dummy.test")
-  {:error, "The url field must be a valid URL."}
+      iex> import Request.Validator.Rules, only: [active_url: 0]
+      iex> fun = active_url()
+      iex> fun.("url", "https://google.com")
+      :ok
+      iex> fun.("url", "invalid_url")
+      {:error, "The url field must be a valid URL."}
+      iex> fun.("url", "https://dummy.test")
+      {:error, "The url field must be a valid URL."}
   """
   def active_url do
     url_fn = url()
@@ -965,15 +965,15 @@ defmodule Request.Validator.Rules do
     end
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [list: 0]
-  iex> fun = list()
-  iex> fun.("emails", 4)
-  {:error, "The emails field must be a list."}
-  iex> fun.("emails", ["a@b.com"])
-  :ok
+      iex> import Request.Validator.Rules, only: [list: 0]
+      iex> fun = list()
+      iex> fun.("emails", 4)
+      {:error, "The emails field must be a list."}
+      iex> fun.("emails", ["a@b.com"])
+      :ok
   """
   def list do
     fn attr, value ->
@@ -983,21 +983,21 @@ defmodule Request.Validator.Rules do
     end
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [map: 0, map: 1]
-  iex> fun = map()
-  iex> metadata = %{"a" => "b", "c" => "d"}
-  iex> fun.("metadata", 4)
-  {:error, "The metadata field must be a map."}
-  iex> fun.("metadata", metadata)
-  :ok
-  iex> fun = map(["a", "c"])
-  iex> fun.("metadata", metadata)
-  :ok
-  iex> fun.("metadata", Map.put(metadata, "e", "f"))
-  {:error, "The metadata field must be a map."}
+      iex> import Request.Validator.Rules, only: [map: 0, map: 1]
+      iex> fun = map()
+      iex> metadata = %{"a" => "b", "c" => "d"}
+      iex> fun.("metadata", 4)
+      {:error, "The metadata field must be a map."}
+      iex> fun.("metadata", metadata)
+      :ok
+      iex> fun = map(["a", "c"])
+      iex> fun.("metadata", metadata)
+      :ok
+      iex> fun.("metadata", Map.put(metadata, "e", "f"))
+      {:error, "The metadata field must be a map."}
   """
   def map(keys \\ []) when is_list(keys) do
     validator_fn = fn keys, attr, value ->
@@ -1015,15 +1015,15 @@ defmodule Request.Validator.Rules do
     &validator_fn.(keys, &1, &2)
   end
 
-  @doc """
+  @doc ~S"""
   ## Examples
 
-  iex> import Request.Validator.Rules, only: [boolean: 0]
-  iex> fun = boolean()
-  iex> fun.("notify_me", true)
-  :ok
-  iex> fun.("notify_me", 2)
-  {:error, "The notify_me field must be true or false."}
+      iex> import Request.Validator.Rules, only: [boolean: 0]
+      iex> fun = boolean()
+      iex> fun.("notify_me", true)
+      :ok
+      iex> fun.("notify_me", 2)
+      {:error, "The notify_me field must be true or false."}
   """
   def boolean do
     acceptables = [true, false, "1", "0", 1, 0]
