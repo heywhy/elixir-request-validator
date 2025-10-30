@@ -1,11 +1,12 @@
 defmodule RequestValidatorTest do
   use ExUnit.Case, async: true
-  use Plug.Test
 
   alias Plug.Conn
   alias Request.Validator.Plug, as: ValidationPlug
   alias RequestValidatorTest.RegisterRequest
   alias RequestValidatorTest.StrictRequest
+
+  import Plug.Test
 
   doctest(Request.Validator)
 
