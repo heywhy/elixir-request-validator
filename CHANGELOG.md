@@ -5,6 +5,29 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0-rc.0](https://github.com/heywhy/elixir-request-validator/compare/v0.8.5...v1.0.0-rc.0) (2025-10-30)
+### Breaking Changes:
+
+* rename authorization method by atanda rasheed
+
+
+
+### Features:
+
+* include boolean rule by atanda rasheed
+
+* include map and list rules by atanda rasheed
+
+* include url and active_url rules by atanda rasheed
+
+* include gte and lte rules by atanda rasheed
+
+* include gt and lt rules by atanda rasheed
+
+* include min and max rules by atanda rasheed
+
+* conclude new API changes by atanda rasheed
+
 ## [v0.8.5](https://github.com/heywhy/elixir-request-validator/compare/v0.8.4...v0.8.5) (2024-09-25)
 
 
