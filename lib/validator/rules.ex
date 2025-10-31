@@ -7,7 +7,8 @@ defmodule Request.Validator.Rules do
 
   require Decimal
 
-  @type validator :: (... -> :ok | {:error, String.t()})
+  @type result :: :ok | {:error, String.t()}
+  @type validator :: (... -> result())
   @type rule ::
           validator()
           | %{
@@ -90,7 +91,7 @@ defmodule Request.Validator.Rules do
     validator_fn = fn
       false, _, _, _ -> :ok
       true, attr, value, _fun -> required.(attr, value)
-      cond_fn, attr, value, fun when is_function(cond_fn) -> fun.(cond_fn.(), attr, value, fun)
+      cond_fn, attr, value, fun -> fun.(cond_fn.(), attr, value, fun)
     end
 
     %{
@@ -147,13 +148,11 @@ defmodule Request.Validator.Rules do
   """
   @spec string() :: rule()
   def string do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a string.", attribute: attr)
 
       check(is_binary(value), message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -174,7 +173,7 @@ defmodule Request.Validator.Rules do
   """
   @spec alpha() :: rule()
   def alpha do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must only contain letters.", attribute: attr)
 
       value
@@ -182,8 +181,6 @@ defmodule Request.Validator.Rules do
       |> Kernel.and(String.match?(value, ~r/^[a-zA-Z]+$/))
       |> check(message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -206,7 +203,7 @@ defmodule Request.Validator.Rules do
   """
   @spec alpha_num() :: rule()
   def alpha_num do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message =
         gettext("The %{attribute} field must only contain letters and numbers.",
           attribute: attr
@@ -217,8 +214,6 @@ defmodule Request.Validator.Rules do
       |> Kernel.and(String.match?(value, ~r/^[a-zA-Z0-9]+$/))
       |> check(message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -241,7 +236,7 @@ defmodule Request.Validator.Rules do
   """
   @spec alpha_dash() :: rule()
   def alpha_dash do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message =
         gettext(
           "The %{attribute} field must only contain letters, numbers, dashes, and underscores.",
@@ -253,8 +248,6 @@ defmodule Request.Validator.Rules do
       |> Kernel.and(String.match?(value, ~r/^[a-zA-Z0-9-_]+$/))
       |> check(message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -277,13 +270,11 @@ defmodule Request.Validator.Rules do
   """
   @spec integer() :: rule()
   def integer do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be an integer.", attribute: attr)
 
       check(is_integer(value), message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -309,13 +300,11 @@ defmodule Request.Validator.Rules do
   @spec decimal() :: rule()
   def decimal do
     # TODO: support decimal places validation.
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a decimal.", attribute: attr)
 
       check(is_float(value) or Decimal.is_decimal(value), message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -338,13 +327,11 @@ defmodule Request.Validator.Rules do
   """
   @spec numeric() :: rule()
   def numeric do
-    validator_fn = fn attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a number.", attribute: attr)
 
       check(is_number(value), message)
     end
-
-    &validator_fn.(&1, &2)
   end
 
   @doc ~S"""
@@ -370,21 +357,22 @@ defmodule Request.Validator.Rules do
       {:error, "The email field must be a valid email address."}
   """
   @email_checks %{format: Format, mx: MX}
-  @spec email([:format | :mx | String.t()]) :: rule()
+  @spec email([:format | :mx | String.t()] | String.t()) :: rule()
   def email(validations \\ []) do
     validations =
       case validations do
-        [] -> [Format, MX]
-        validations -> validations |> Enum.map(&Utils.to_atom/1) |> Enum.map(&@email_checks[&1])
+        [] ->
+          [Format, MX]
+
+        validations ->
+          validations |> List.wrap() |> Enum.map(&Utils.to_atom/1) |> Enum.map(&@email_checks[&1])
       end
 
-    validator_fn = fn validations, attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a valid email address.", attribute: attr)
 
       check(is_binary(value) and EmailChecker.valid?(value, validations), message)
     end
-
-    &validator_fn.(validations, &1, &2)
   end
 
   @doc ~S"""
@@ -409,7 +397,7 @@ defmodule Request.Validator.Rules do
   """
   @spec confirmed(nil | String.t()) :: rule()
   def confirmed(confirmation \\ nil) do
-    validator_fn = fn confirmation, attr, value, fields ->
+    fn attr, value, fields ->
       confirmation =
         case confirmation do
           nil -> attr <> "_confirmation"
@@ -420,8 +408,6 @@ defmodule Request.Validator.Rules do
 
       check(fields[confirmation] == value, message)
     end
-
-    &validator_fn.(confirmation, &1, &2, &3)
   end
 
   @doc ~S"""
@@ -440,22 +426,20 @@ defmodule Request.Validator.Rules do
   """
   @spec allowed([term()]) :: rule()
   def allowed(options) when is_list(options) do
-    validator_fn = fn options, attr, value ->
+    fn attr, value ->
       message = gettext("The selected %{attribute} is invalid.", attribute: attr)
 
       options
       |> Enum.member?(value)
       |> check(message)
     end
-
-    &validator_fn.(options, &1, &2)
   end
 
   @doc ~S"""
   ## Examples
 
       iex> import Request.Validator.Rules, only: [min: 1]
-      iex> fun = min([30])
+      iex> fun = min(30)
       iex> fun.("age", 40)
       :ok
       iex> fun.("age", 10)
@@ -471,11 +455,9 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", [1, 3])
       :ok
   """
-  def min([bound]), do: min(bound)
-
   def min(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
-    validator_fn = fn bound, attr, value ->
+    fn attr, value ->
       messages = %{
         numeric:
           gettext("The %{attribute} field must be at least %{min}.",
@@ -496,15 +478,13 @@ defmodule Request.Validator.Rules do
 
       check_size_with_op(value, bound, &Kernel.>=/2, messages)
     end
-
-    &validator_fn.(bound, &1, &2)
   end
 
   @doc ~S"""
   ## Examples
 
       iex> import Request.Validator.Rules, only: [max: 1]
-      iex> fun = max([30])
+      iex> fun = max(30)
       iex> fun.("age", 20)
       :ok
       iex> fun.("age", 30)
@@ -522,11 +502,9 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", [1, 3])
       :ok
   """
-  def max([bound]), do: max(bound)
-
   def max(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
-    validator_fn = fn bound, attr, value ->
+    fn attr, value ->
       messages = %{
         numeric:
           gettext("The %{attribute} field must not be greater than %{max}.",
@@ -547,8 +525,6 @@ defmodule Request.Validator.Rules do
 
       check_size_with_op(value, bound, &Kernel.<=/2, messages)
     end
-
-    &validator_fn.(bound, &1, &2)
   end
 
   @doc ~S"""
@@ -586,10 +562,8 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be greater than 2 characters."}
   """
-  def gt([bound]), do: gt(bound)
-
   def gt(bound) when is_binary(bound) or is_number(bound) do
-    validator_fn = fn bound, attr, value, fields ->
+    fn attr, value, fields ->
       compared_value = fields[bound]
       v = get_size(compared_value) || bound
 
@@ -625,8 +599,6 @@ defmodule Request.Validator.Rules do
           {:error, messages.string}
       end
     end
-
-    &validator_fn.(bound, &1, &2, &3)
   end
 
   @doc ~S"""
@@ -664,10 +636,8 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be less than 2 characters."}
   """
-  def lt([bound]), do: lt(bound)
-
   def lt(bound) when is_binary(bound) or is_number(bound) do
-    validator_fn = fn bound, attr, value, fields ->
+    fn attr, value, fields ->
       compared_value = fields[bound]
       v = get_size(compared_value) || bound
 
@@ -703,8 +673,6 @@ defmodule Request.Validator.Rules do
           {:error, messages.string}
       end
     end
-
-    &validator_fn.(bound, &1, &2, &3)
   end
 
   @doc ~S"""
@@ -742,10 +710,8 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be greater than or equal to 2 characters."}
   """
-  def gte([bound]), do: gte(bound)
-
   def gte(bound) when is_binary(bound) or is_number(bound) do
-    validator_fn = fn bound, attr, value, fields ->
+    fn attr, value, fields ->
       compared_value = fields[bound]
       v = get_size(compared_value) || bound
 
@@ -781,8 +747,6 @@ defmodule Request.Validator.Rules do
           {:error, messages.string}
       end
     end
-
-    &validator_fn.(bound, &1, &2, &3)
   end
 
   @doc ~S"""
@@ -820,10 +784,8 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be less than or equal to 2 characters."}
   """
-  def lte([bound]), do: lte(bound)
-
   def lte(bound) when is_binary(bound) or is_number(bound) do
-    validator_fn = fn bound, attr, value, fields ->
+    fn attr, value, fields ->
       compared_value = fields[bound]
       v = get_size(compared_value) || bound
 
@@ -859,8 +821,6 @@ defmodule Request.Validator.Rules do
           {:error, messages.string}
       end
     end
-
-    &validator_fn.(bound, &1, &2, &3)
   end
 
   @doc ~S"""
@@ -881,11 +841,9 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", Enum.to_list(1..5))
       :ok
   """
-  def size([bound]), do: size(bound)
-
   def size(bound) when is_number(bound) do
     # TODO: check for file size
-    validator_fn = fn bound, attr, value ->
+    fn attr, value ->
       messages = %{
         numeric: gettext("The %{attribute} field must be %{size}.", attribute: attr, size: bound),
         list:
@@ -902,8 +860,6 @@ defmodule Request.Validator.Rules do
 
       check_size_with_op(value, bound, &Kernel.==/2, messages)
     end
-
-    &validator_fn.(bound, &1, &2)
   end
 
   @doc ~S"""
@@ -1000,7 +956,7 @@ defmodule Request.Validator.Rules do
       {:error, "The metadata field must be a map."}
   """
   def map(keys \\ []) when is_list(keys) do
-    validator_fn = fn keys, attr, value ->
+    fn attr, value ->
       message = gettext("The %{attribute} field must be a map.", attribute: attr)
 
       cond =
@@ -1011,8 +967,6 @@ defmodule Request.Validator.Rules do
 
       check(cond, message)
     end
-
-    &validator_fn.(keys, &1, &2)
   end
 
   @doc ~S"""

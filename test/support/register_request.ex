@@ -18,7 +18,7 @@ defmodule RequestValidatorTest.RegisterRequest do
       "address.line1" => ~V[required|string],
       "address.line2" => ~V[string],
       "address.city" => ~V[required|string],
-      "address.state" => [required_if(["address.country", "NG"]), string()],
+      "address.state" => ~V[required_if:address.country,NG|string],
       "address.country" => ~V[required|string],
       "documents" => ~V[required],
       "documents.*.file" => ~V[string],

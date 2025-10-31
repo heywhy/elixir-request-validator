@@ -20,8 +20,10 @@ defmodule Request.Validator do
   """
   @callback authorize?(Plug.Conn.t()) :: boolean()
 
-  @spec validate(module(), map() | keyword(), keyword()) :: validation_result()
-  def validate(module, params, opts \\ []) do
+  @spec validate(module() | map(), map(), keyword()) :: validation_result()
+  def validate(module, params, opts \\ [])
+
+  def validate(module, params, opts) when is_atom(module) do
     rules =
       cond do
         function_exported?(module, :rules, 1) ->
@@ -31,6 +33,10 @@ defmodule Request.Validator do
           module.rules()
       end
 
+    validate(rules, params, opts)
+  end
+
+  def validate(rules, params, opts) when is_map(rules) do
     opts = set_default_opts(opts)
 
     errors =
@@ -50,11 +56,17 @@ defmodule Request.Validator do
   iex> import Request.Validator
   iex> import Request.Validator.Rules
   iex> rules = ~V[required|email:format]
-  iex> [%{validator: _}, rule] = rules
-  iex> is_function(rule, 2)
+  iex> [{required, []}, {email, ["format"]}] = rules
+  iex> is_function(required, 0)
+  true
+  iex> match?(%{implicit?: true}, required())
+  true
+  iex> is_function(email, 1)
   true
   """
   defmacro sigil_V({:<<>>, _, [rules]}, []) do
+    env = __CALLER__
+
     list =
       rules
       |> String.split("|")
@@ -75,6 +87,7 @@ defmodule Request.Validator do
         {Utils.to_atom(rule), args}
       end)
       |> Enum.reduce([], fn rule, acc ->
+        rule = Tuple.insert_at(rule, 2, env)
         expr = rule_to_expr(rule)
 
         Enum.concat([expr], acc)
@@ -83,15 +96,41 @@ defmodule Request.Validator do
     quote do: unquote(list)
   end
 
-  defp rule_to_expr({rule, nil}) do
-    quote do: unquote(rule)()
+  defp find_fun_owner(env, fun, arity) do
+    case Macro.Env.lookup_import(env, {fun, arity}) do
+      [] -> env.module
+      [{ctx, module}] when ctx in ~w[function macro]a -> module
+    end
   end
 
-  defp rule_to_expr({rule, arg}) do
+  defp method_to_capture_ast(module, method, args) do
+    arity = Enum.count(args)
+
+    {{:&, [], [{:/, [], [{method, [], module}, arity]}]}, args}
+  end
+
+  defp rule_to_expr({rule, nil, env}) do
+    module = find_fun_owner(env, rule, 0)
+    expr = method_to_capture_ast(module, rule, [])
+
+    quote do: unquote(expr)
+  end
+
+  defp rule_to_expr({rule, arg, env}) do
     arg = convert_params(arg)
     arg = Macro.escape(arg)
+    num = Enum.count(arg)
+    module = find_fun_owner(env, rule, num)
 
-    quote do: unquote(rule)(unquote(arg))
+    args =
+      case function_exported?(module, rule, num) do
+        true -> arg
+        false -> [arg]
+      end
+
+    expr = method_to_capture_ast(module, rule, args)
+
+    quote do: unquote(expr)
   end
 
   defp convert_params(arg), do: Enum.map(arg, &maybe_convert_to_number/1)
@@ -202,13 +241,19 @@ defmodule Request.Validator do
     |> Enum.map(&elem(&1, 1))
   end
 
-  defp call_rule(fun, _, nil, _fields) when is_function(fun), do: :ok
-
-  defp call_rule(fun, field, value, fields) when is_function(fun) do
+  defp call_rule(%{implicit?: true, validator: fun}, field, value, fields) do
     call_func(fun, field, value, fields)
   end
 
-  defp call_rule(%{implicit?: true, validator: fun}, field, value, fields) do
+  defp call_rule({fun, args}, field, value, fields) when is_function(fun) and is_list(args) do
+    fun
+    |> apply(args)
+    |> call_rule(field, value, fields)
+  end
+
+  defp call_rule(_fun, _field, nil, _fields), do: :ok
+
+  defp call_rule(fun, field, value, fields) when is_function(fun) do
     call_func(fun, field, value, fields)
   end
 
