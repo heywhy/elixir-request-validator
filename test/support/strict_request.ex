@@ -4,5 +4,5 @@ defmodule RequestValidatorTest.StrictRequest do
   import Request.Validator.Rules
 
   @impl Request.Validator
-  def rules(_), do: %{"email" => [email()]}
+  def rules(_), do: %{"email" => [email()], "docs.*.type" => [string()]}
 end

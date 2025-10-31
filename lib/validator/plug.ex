@@ -120,7 +120,7 @@ defmodule Request.Validator.Plug do
 
     case spec[phoenix_action] do
       nil -> conn
-      rules_or_module -> do_call(conn, rules_or_module, on_error)
+      rules_or_module -> do_call(conn, rules_or_module, on_error, conn: conn)
     end
   end
 
@@ -129,26 +129,27 @@ defmodule Request.Validator.Plug do
 
     case Enum.find(spec, &match?({^matched, _}, &1)) do
       nil -> conn
-      {^matched, rules_or_module} -> do_call(conn, rules_or_module, on_error)
+      {^matched, rules_or_module} -> do_call(conn, rules_or_module, on_error, conn: conn)
     end
   end
 
-  defp do_call(conn, module, on_error) when is_atom(module) do
+  defp do_call(conn, module, on_error, opts) when is_atom(module) do
     case module.authorize?(conn) do
       false ->
         unauthorized(conn)
 
       true ->
         rules = module.rules(conn)
+        updated_opts = opts |> Keyword.merge(module.__validator_opts__())
 
-        do_call(conn, rules, on_error)
+        do_call(conn, rules, on_error, updated_opts)
     end
   end
 
-  defp do_call(conn, rules, on_error) when is_map(rules) and is_function(on_error, 2) do
+  defp do_call(conn, rules, on_error, opts) when is_map(rules) and is_function(on_error, 2) do
     params = conn.query_params |> Map.merge(conn.body_params) |> Map.merge(conn.path_params)
 
-    case Validator.validate(rules, params) do
+    case Validator.validate(rules, params, opts) do
       :ok ->
         conn
 

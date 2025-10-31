@@ -1,5 +1,4 @@
 defmodule Request.Validator do
-  alias Ecto.Changeset
   alias Request.Validator.Fields
   alias Request.Validator.Utils
 
@@ -8,12 +7,12 @@ defmodule Request.Validator do
   @doc ~S"""
   Get the validation rules that apply to the request.
   """
-  @callback rules(Plug.Conn.t()) :: map() | Changeset.t()
+  @callback rules(Plug.Conn.t()) :: map()
 
   @doc ~S"""
   Determine if the user is authorized to make this request.
   ```elixir
-  def authorize(conn) do
+  def authorize?(conn) do
     user(conn).is_admin
   end
   ```
@@ -24,14 +23,8 @@ defmodule Request.Validator do
   def validate(module, params, opts \\ [])
 
   def validate(module, params, opts) when is_atom(module) do
-    rules =
-      cond do
-        function_exported?(module, :rules, 1) ->
-          module.rules(opts[:conn])
-
-        function_exported?(module, :rules, 0) ->
-          module.rules()
-      end
+    rules = module.rules(opts[:conn])
+    opts = module.__validator_opts__() |> Keyword.merge(opts)
 
     validate(rules, params, opts)
   end
@@ -150,18 +143,12 @@ defmodule Request.Validator do
     quote bind_quoted: [opts: opts] do
       import Request.Validator, only: [sigil_V: 2]
 
+      @validator_opts opts
       @before_compile Request.Validator
       @behaviour Request.Validator
 
-      @spec validate(Plug.Conn.t() | map()) :: Request.Validator.validation_result()
-      def validate(%Plug.Conn{} = conn) do
-        params = conn.query_params |> Map.merge(conn.body_params) |> Map.merge(conn.path_params)
-        Request.Validator.validate(__MODULE__, params, unquote(opts) ++ [conn: conn])
-      end
-
-      def validate(params) when is_map(params) do
-        Request.Validator.validate(__MODULE__, params, unquote(opts))
-      end
+      @doc false
+      def __validator_opts__, do: unquote(opts)
     end
   end
 
@@ -189,6 +176,31 @@ defmodule Request.Validator do
       collapse(key, rules, fields, acc)
     end)
   end
+
+  defp expand_data(data) do
+    Enum.reduce(data, %{}, fn {k, v}, acc ->
+      do_expand_data(k, v, acc)
+    end)
+  end
+
+  defp do_expand_data(prefix, value, acc) when is_map(value) do
+    Enum.reduce(value, acc, fn {k, v}, acc ->
+      do_expand_data("#{prefix}.#{k}", v, acc)
+    end)
+  end
+
+  defp do_expand_data(prefix, value, acc) when is_list(value) do
+    count = Enum.count(value)
+    range = Range.new(0, count - 1)
+
+    Enum.reduce(range, acc, fn index, acc ->
+      el = Enum.at(value, index)
+
+      do_expand_data("#{prefix}.#{index}", el, acc)
+    end)
+  end
+
+  defp do_expand_data(key, value, acc), do: Map.put(acc, key, value)
 
   defp collapse(key, rules, fields, acc) when is_binary(key) do
     case String.contains?(key, "*") do
@@ -272,15 +284,16 @@ defmodule Request.Validator do
 
   defp undeclared_fields(fields, rules, opts) do
     opts
-    |> Keyword.get(:strict?, false)
+    |> Keyword.fetch!(:strict?)
     |> case do
       false ->
         []
 
       true ->
         rule_fields = MapSet.new(rules, &elem(&1, 0))
+        expanded_data = expand_data(fields.data)
 
-        fields.data
+        expanded_data
         |> MapSet.new(&elem(&1, 0))
         |> MapSet.difference(rule_fields)
         |> MapSet.to_list()

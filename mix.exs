@@ -66,7 +66,6 @@ defmodule Request.Validator.Mixfile do
       {:credo, "~> 1.5", only: :dev, runtime: false},
       {:decimal, "~> 2.0", optional: true},
       {:dialyxir, "~> 1.1", only: :dev, runtime: false},
-      {:ecto, "~> 3.5"},
       {:email_checker, "~> 0.1"},
       {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:excoveralls, "~> 0.14", only: :test},

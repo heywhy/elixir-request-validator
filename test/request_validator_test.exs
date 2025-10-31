@@ -111,36 +111,29 @@ defmodule RequestValidatorTest do
     assert conn.resp_body == "OK"
   end
 
-  @tag :skip
   test "fails request validation when undeclared fields are passed to a strict request" do
+    params = %{
+      email: 123,
+      random_field: "Lorem",
+      metadata: %{a: 1, b: 2, c: [0, 2, 3]},
+      docs: [%{type: "m", unknown: true}]
+    }
+
     conn =
       :post
-      |> conn("/api/hello", %{email: 123, random_field: "Lorem"})
+      |> conn("/api/hello", params)
       |> Conn.put_private(:phoenix_action, :strict)
       |> ValidationPlug.call(@opts)
 
     assert conn.state == :sent
+    assert conn.status == 422
     assert conn.resp_body =~ "This field is unknown"
     assert conn.resp_body =~ "random_field"
-    assert conn.status == 422
-  end
-
-  test "pass ecto validation support" do
-    params = %{
-      email: "test@gmail.com",
-      password: "password",
-      name: "john doe",
-      age: 31
-    }
-
-    conn =
-      conn(:post, "/api/hello", params)
-      |> Conn.put_req_header("content-type", "application/json")
-      |> Conn.put_private(:phoenix_action, :ecto_rules)
-      |> ValidationPlug.call(@opts)
-
-    assert conn.state == :unset
-    assert conn.resp_body == nil
-    assert conn.status == nil
+    assert conn.resp_body =~ "metadata.a"
+    assert conn.resp_body =~ "metadata.c.0"
+    assert conn.resp_body =~ "metadata.c.1"
+    assert conn.resp_body =~ "metadata.c.2"
+    refute conn.resp_body =~ "docs.0.type"
+    assert conn.resp_body =~ "docs.0.unknown"
   end
 end
