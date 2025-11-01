@@ -77,6 +77,10 @@ defmodule Request.Validator.Plug do
   plug Request.Validator.Plug,
     register: App.Requests.RegisterRequest,
     on_error: fn conn, errors -> json_resp(conn, "Handle your errors: #{inspect errors}") end
+
+  # A module that exports a `__validators__/0` method that returns
+  # a keyword list whose key is the action and value the validator/rules.
+  plug Request.Validator.Plug, ActionValidationCollector
   ```
   """
   @impl Plug

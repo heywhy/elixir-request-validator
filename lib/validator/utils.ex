@@ -1,4 +1,5 @@
 defmodule Request.Validator.Utils do
+  @moduledoc false
   @spec to_atom(term()) :: atom()
   def to_atom(val) when is_atom(val), do: val
 

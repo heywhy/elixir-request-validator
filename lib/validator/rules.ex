@@ -22,7 +22,7 @@ defmodule Request.Validator.Rules do
              Request.Validator.Gettext
            )
 
-  defmacrop gettext(msgid, opts) do
+  defmacro gettext(msgid, opts) do
     quote do
       gettext_with_backend(@backend, unquote(msgid), unquote(opts))
     end
@@ -68,19 +68,21 @@ defmodule Request.Validator.Rules do
   @doc ~S"""
   ## Examples
 
+      iex> alias Request.Validator.Fields
       iex> import Request.Validator.Rules, only: [required_if: 1]
+      iex> fields = Fields.new(%{})
       iex> %{validator: fun} = required_if(true)
-      iex> fun.("description", "")
+      iex> fun.("description", "", fields)
       {:error, "The description field is required."}
-      iex> fun.("age", nil)
+      iex> fun.("age", nil, fields)
       {:error, "The age field is required."}
       iex> %{validator: fun} = required_if(fn -> false end)
-      iex> fun.("key", "")
+      iex> fun.("key", "", fields)
       :ok
-      iex> fun.("state", nil)
+      iex> fun.("state", nil, fields)
       :ok
       iex> %{validator: fun} = required_if(["passenger", "kid"])
-      iex> data = %{"passenger" => "kid"}
+      iex> data = Fields.new(%{"passenger" => "kid"})
       iex> fun.("parent", nil, data)
       {:error, "The parent field is required when passenger is kid."}
   """
@@ -89,14 +91,22 @@ defmodule Request.Validator.Rules do
     %{validator: required} = required()
 
     validator_fn = fn
-      false, _, _, _ -> :ok
-      true, attr, value, _fun -> required.(attr, value)
-      cond_fn, attr, value, fun -> fun.(cond_fn.(), attr, value, fun)
+      false, _, _, _, _ ->
+        :ok
+
+      true, attr, value, _fields, _fun ->
+        required.(attr, value)
+
+      cond_fn, attr, value, fields, fun when is_function(cond_fn, 0) ->
+        fun.(cond_fn.(), attr, value, fields, fun)
+
+      cond_fn, attr, value, fields, fun ->
+        fun.(cond_fn.(fields), attr, value, fields, fun)
     end
 
     %{
       implicit?: true,
-      validator: &validator_fn.(condition, &1, &2, validator_fn)
+      validator: &validator_fn.(condition, &1, &2, &3, validator_fn)
     }
   end
 
@@ -104,8 +114,8 @@ defmodule Request.Validator.Rules do
     required_if(other, value, &Kernel.==/2)
   end
 
-  # TODO: allow other operators and tailor error appropriately.
-  defp required_if(other, value, op) do
+  @spec required_if(term(), term(), (term(), term() -> boolean())) :: term()
+  def required_if(other, value, op) do
     %{validator: required} = required()
 
     validator_fn = fn
@@ -280,14 +290,14 @@ defmodule Request.Validator.Rules do
   @doc ~S"""
   ## Examples
 
-      iex> import Request.Validator.Rules, only: [decimal: 0]
+      iex> import Request.Validator.Rules, only: [decimal: 0, decimal: 1, decimal: 2]
       iex> fun = decimal()
       iex> fun.("amount", 2.0)
       :ok
       iex> fun.("amount", Decimal.new("9.999"))
       :ok
       iex> fun.("amount", 1)
-      {:error, "The amount field must be a decimal."}
+      :ok
       iex> fun.("amount", "abcde2")
       {:error, "The amount field must be a decimal."}
       iex> fun.("amount", nil)
@@ -296,14 +306,75 @@ defmodule Request.Validator.Rules do
       {:error, "The amount field must be a decimal."}
       iex> fun.("amount", [])
       {:error, "The amount field must be a decimal."}
+      iex> fun = decimal(2)
+      iex> fun.("amount", 1.36)
+      :ok
+      iex> fun.("amount", 1.366484)
+      {:error, "The amount field must have 2 decimal places."}
+      iex> fun = decimal(2, 5)
+      iex> fun.("amount", 1.36)
+      :ok
+      iex> fun.("amount", 1.366484)
+      {:error, "The amount field must have between 2 and 5 decimal places."}
   """
-  @spec decimal() :: rule()
-  def decimal do
-    # TODO: support decimal places validation.
-    fn attr, value ->
-      message = gettext("The %{attribute} field must be a decimal.", attribute: attr)
+  @spec decimal(nil | pos_integer()) :: rule()
+  def decimal(min \\ nil) do
+    decimal(min, min)
+  end
 
-      check(is_float(value) or Decimal.is_decimal(value), message)
+  @spec decimal(nil | pos_integer(), nil | pos_integer()) :: rule()
+  def decimal(nil, nil) do
+    do_decimal(nil, nil)
+  end
+
+  def decimal(min, nil) when is_integer(min) do
+    do_decimal(min, min)
+  end
+
+  def decimal(min, max) when is_integer(min) and is_integer(max) and min >= 0 and min <= max do
+    do_decimal(min, max)
+  end
+
+  defp do_decimal(min, max) do
+    fn attr, value ->
+      try do
+        decimal = to_decimal_fn!(value)
+        exp = abs(decimal.exp)
+        min = min || exp
+        max = max || min
+        within_boundary? = exp >= min and exp <= max
+
+        message =
+          case exp > max and min != max do
+            false ->
+              gettext("The %{attribute} field must have %{decimal} decimal places.",
+                attribute: attr,
+                decimal: min
+              )
+
+            true ->
+              gettext(
+                "The %{attribute} field must have between %{min} and %{max} decimal places.",
+                attribute: attr,
+                max: max,
+                min: min
+              )
+          end
+
+        check(within_boundary?, message)
+      rescue
+        _ in [Decimal.Error, FunctionClauseError] ->
+          message = gettext("The %{attribute} field must be a decimal.", attribute: attr)
+          {:error, message}
+      end
+    end
+  end
+
+  defp to_decimal_fn!(value) do
+    cond do
+      Decimal.is_decimal(value) -> value
+      is_float(value) -> Decimal.from_float(value)
+      true -> Decimal.new(value)
     end
   end
 
@@ -455,6 +526,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", [1, 3])
       :ok
   """
+  @spec min(number()) :: rule()
   def min(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
     fn attr, value ->
@@ -502,6 +574,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", [1, 3])
       :ok
   """
+  @spec max(number()) :: rule()
   def max(bound) when is_number(bound) do
     # TODO: check for `Plug.Upload` size.
     fn attr, value ->
@@ -562,6 +635,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be greater than 2 characters."}
   """
+  @spec gt(String.t() | number()) :: rule()
   def gt(bound) when is_binary(bound) or is_number(bound) do
     fn attr, value, fields ->
       compared_value = fields[bound]
@@ -636,6 +710,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be less than 2 characters."}
   """
+  @spec lt(String.t() | number()) :: rule()
   def lt(bound) when is_binary(bound) or is_number(bound) do
     fn attr, value, fields ->
       compared_value = fields[bound]
@@ -710,6 +785,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be greater than or equal to 2 characters."}
   """
+  @spec gte(String.t() | number()) :: rule()
   def gte(bound) when is_binary(bound) or is_number(bound) do
     fn attr, value, fields ->
       compared_value = fields[bound]
@@ -784,6 +860,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("sub_items", "milk", fields)
       {:error, "The sub_items field must be less than or equal to 2 characters."}
   """
+  @spec lte(String.t() | number()) :: rule()
   def lte(bound) when is_binary(bound) or is_number(bound) do
     fn attr, value, fields ->
       compared_value = fields[bound]
@@ -841,7 +918,8 @@ defmodule Request.Validator.Rules do
       iex> fun.("tags", Enum.to_list(1..5))
       :ok
   """
-  def size(bound) when is_number(bound) do
+  @spec size(non_neg_integer()) :: rule()
+  def size(bound) when is_integer(bound) and bound >= 0 do
     # TODO: check for file size
     fn attr, value ->
       messages = %{
@@ -872,6 +950,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("url", "invalid_url")
       {:error, "The url field must be a valid URL."}
   """
+  @spec url() :: rule()
   def url do
     fn attr, value ->
       message = gettext("The %{attribute} field must be a valid URL.", attribute: attr)
@@ -900,6 +979,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("url", "https://dummy.test")
       {:error, "The url field must be a valid URL."}
   """
+  @spec active_url() :: rule()
   def active_url do
     url_fn = url()
 
@@ -931,6 +1011,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("emails", ["a@b.com"])
       :ok
   """
+  @spec list() :: rule()
   def list do
     fn attr, value ->
       message = gettext("The %{attribute} field must be a list.", attribute: attr)
@@ -955,6 +1036,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("metadata", Map.put(metadata, "e", "f"))
       {:error, "The metadata field must be a map."}
   """
+  @spec map([String.t()]) :: rule()
   def map(keys \\ []) when is_list(keys) do
     fn attr, value ->
       message = gettext("The %{attribute} field must be a map.", attribute: attr)
@@ -979,6 +1061,7 @@ defmodule Request.Validator.Rules do
       iex> fun.("notify_me", 2)
       {:error, "The notify_me field must be true or false."}
   """
+  @spec boolean() :: rule()
   def boolean do
     acceptables = [true, false, "1", "0", 1, 0]
 
