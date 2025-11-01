@@ -19,6 +19,7 @@ defmodule Request.Validator.Plug do
     end
   end
 
+  # coveralls-ignore-start
   @doc false
   def __on_definition__(
         env,
@@ -68,6 +69,8 @@ defmodule Request.Validator.Plug do
       def __validators__, do: unquote(validators)
     end
   end
+
+  # coveralls-ignore-stop
 
   @doc ~S"""
   Init the Request.Validator.Plug with an optional error callback
