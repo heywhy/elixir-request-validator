@@ -5,6 +5,17 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0-rc.1](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.0...v1.0.0-rc.1) (2025-11-01)
+
+
+
+
+### Bug Fixes:
+
+* improve the decimal rule and update docs by Rasheed Atanda
+
+* update strict checking by Rasheed Atanda
+
 ## [v1.0.0-rc.0](https://github.com/heywhy/elixir-request-validator/compare/v0.8.5...v1.0.0-rc.0) (2025-10-30)
 ### Breaking Changes:
 
