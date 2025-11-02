@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0-rc.2](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.1...v1.0.0-rc.2) (2025-11-02)
+
+
+
+
+### Bug Fixes:
+
+* unquote configured gettext backend by Rasheed Atanda
+
 ## [v1.0.0-rc.1](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.0...v1.0.0-rc.1) (2025-11-01)
 
 
