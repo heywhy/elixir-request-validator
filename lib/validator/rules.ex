@@ -24,7 +24,7 @@ defmodule Request.Validator.Rules do
 
   defmacro gettext(msgid, opts) do
     quote do
-      gettext_with_backend(@backend, unquote(msgid), unquote(opts))
+      gettext_with_backend(unquote(@backend), unquote(msgid), unquote(opts))
     end
   end
 
