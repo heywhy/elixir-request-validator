@@ -427,13 +427,16 @@ defmodule Request.Validator.Rules do
       iex> fun.("email", [])
       {:error, "The email field must be a valid email address."}
   """
+
   @email_checks %{format: Format, mx: MX}
+  @default Application.compile_env(:email_checker, :validations, [Format, MX])
+
   @spec email([:format | :mx | String.t()] | String.t()) :: rule()
   def email(validations \\ []) do
     validations =
       case validations do
         [] ->
-          [Format, MX]
+          @default
 
         validations ->
           validations |> List.wrap() |> Enum.map(&Utils.to_atom/1) |> Enum.map(&@email_checks[&1])

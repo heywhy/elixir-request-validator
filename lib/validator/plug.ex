@@ -104,7 +104,7 @@ defmodule Request.Validator.Plug do
   The default callback to be invoked when there is a param that fails validation.
   """
   def on_error(conn, errors) do
-    json_resp(conn, 422, %{message: "Unprocessable entity", errors: errors}) |> halt()
+    json_resp(conn, 422, %{message: "Unprocessable Entity", errors: errors}) |> halt()
   end
 
   defp unauthorized(conn) do
