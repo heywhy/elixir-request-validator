@@ -205,18 +205,18 @@ defmodule Request.Validator do
   defp collapse(key, rules, fields, acc) when is_binary(key) do
     case String.contains?(key, "*") do
       false -> Map.put(acc, key, rules)
-      true -> array_map(key, rules, fields, acc)
+      true -> list_map(key, rules, fields, acc)
     end
   end
 
-  defp array_map(key, rules, fields, acc) when is_binary(key) do
+  defp list_map(key, rules, fields, acc) when is_binary(key) do
     key
     |> String.split("*", parts: 2)
     |> Enum.map(&String.trim(&1, "."))
-    |> array_map(rules, fields, acc)
+    |> list_map(rules, fields, acc)
   end
 
-  defp array_map([h, t], rules, fields, acc) do
+  defp list_map([h, t], rules, fields, acc) do
     trim_fn = &String.trim(&1, ".")
 
     result =
