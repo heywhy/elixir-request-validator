@@ -227,7 +227,7 @@ defmodule Request.Validator do
           |> then(&Range.new(0, &1 - 1))
           |> Enum.reduce(%{}, &(trim_fn.("#{h}.#{&1}.#{t}") |> collapse(rules, fields, &2)))
 
-        value when value == [] or is_nil(value) ->
+        value when value == [] or not is_list(value) ->
           %{}
       end
 
