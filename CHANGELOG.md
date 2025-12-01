@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0-rc.5](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.4...v1.0.0-rc.5) (2025-12-01)
+
+
+
+
+### Bug Fixes:
+
+* don't try to expand when empty by Rasheed Atanda
+
 ## [v1.0.0-rc.4](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.3...v1.0.0-rc.4) (2025-11-13)
 
 
