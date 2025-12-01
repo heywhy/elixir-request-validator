@@ -189,6 +189,8 @@ defmodule Request.Validator do
     end)
   end
 
+  defp do_expand_data(_prefix, [], acc), do: acc
+
   defp do_expand_data(prefix, value, acc) when is_list(value) do
     count = Enum.count(value)
     range = Range.new(0, count - 1)
