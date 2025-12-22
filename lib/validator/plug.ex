@@ -154,9 +154,7 @@ defmodule Request.Validator.Plug do
   end
 
   defp do_call(conn, rules, on_error, opts) when is_map(rules) and is_function(on_error, 2) do
-    params = conn.query_params |> Map.merge(conn.body_params) |> Map.merge(conn.path_params)
-
-    case Validator.validate(rules, params, opts) do
+    case Validator.validate(rules, conn.params, opts) do
       :ok ->
         conn
 
