@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.0-rc.6](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.5...v1.0.0-rc.6) (2025-12-22)
+
+
+
+
+### Bug Fixes:
+
+* remove redundant merge cos of Plug.Parsers by Rasheed Atanda
+
 ## [v1.0.0-rc.5](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.4...v1.0.0-rc.5) (2025-12-01)
 
 
