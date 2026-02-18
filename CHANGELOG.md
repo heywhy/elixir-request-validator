@@ -5,6 +5,15 @@ See [Conventional Commits](Https://conventionalcommits.org) for commit guideline
 
 <!-- changelog -->
 
+## [v1.0.1](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.6...v1.0.1) (2026-02-18)
+
+
+
+
+### Bug Fixes:
+
+* wrap options in list for `allowed` by Rasheed Atanda
+
 ## [v1.0.0-rc.6](https://github.com/heywhy/elixir-request-validator/compare/v1.0.0-rc.5...v1.0.0-rc.6) (2025-12-22)
 
 
