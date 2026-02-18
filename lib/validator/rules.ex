@@ -497,13 +497,17 @@ defmodule Request.Validator.Rules do
       {:error, "The selected gender is invalid."}
       iex> fun.("gender", "goat")
       {:error, "The selected gender is invalid."}
+      iex> allowed("track").("sport", "track")
+      :ok
   """
-  @spec allowed([term()]) :: rule()
-  def allowed(options) when is_list(options) do
+  @spec allowed([term()] | term()) :: rule()
+  def allowed(options) do
+    values = List.wrap(options)
+
     fn attr, value ->
       message = gettext("The selected %{attribute} is invalid.", attribute: attr)
 
-      options
+      values
       |> Enum.member?(value)
       |> check(message)
     end
